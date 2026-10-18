@@ -84,7 +84,8 @@ export default function App() {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
   const [filter, setFilter] = useState<FilterKey>(() => {
     const requested = new URLSearchParams(window.location.search).get('filter');
-    return requested && requested in FILTERS ? (requested as FilterKey) : 'confidence';
+    // own keys only: `in` would also accept inherited names such as "constructor" and crash the app
+    return requested && Object.prototype.hasOwnProperty.call(FILTERS, requested) ? (requested as FilterKey) : 'confidence';
   });
   const [selectedIso, setSelectedIso] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
@@ -136,17 +137,31 @@ export default function App() {
     [byIso, compareMode, selectedIso],
   );
 
-  // Deep links: https://…/#FRA opens France directly; the hash follows the selection.
+  // Deep links: https://…/#FRA opens France, #FRA,DEU a comparison. Read once when the data is ready
+  // (not again when macro_details.json lands) and whenever the user edits the hash; the hash then follows the selection.
+  const byIsoRef = useRef(byIso);
+  byIsoRef.current = byIso;
+  const ready = state.status === 'ready';
   useEffect(() => {
-    if (state.status !== 'ready') return;
-    const [iso, other] = window.location.hash.slice(1).toUpperCase().split(',');
-    const country = byIso.get(iso);
-    if (!country) return;
-    setSelectedIso(iso);
-    if (other && other !== iso && byIso.has(other)) setCompareIso(other);
-    const timer = window.setTimeout(() => globeRef.current?.flyTo(country), 600);
-    return () => window.clearTimeout(timer);
-  }, [state.status, byIso]);
+    if (!ready) return;
+    let timer: number | undefined;
+    const openFromHash = (delay: number) => {
+      const [iso, other] = window.location.hash.slice(1).toUpperCase().split(',');
+      const country = byIsoRef.current.get(iso);
+      if (!country) return;
+      setSelectedIso(iso);
+      setCompareIso(other && other !== iso && byIsoRef.current.has(other) ? other : null);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => globeRef.current?.flyTo(country), delay);
+    };
+    openFromHash(600); // let the globe initialise first
+    const onHashChange = () => openFromHash(0);
+    window.addEventListener('hashchange', onHashChange);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('hashchange', onHashChange);
+    };
+  }, [ready]);
 
   useEffect(() => {
     if (state.status !== 'ready') return;
@@ -167,6 +182,9 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || compared) return;
+      // Escape inside the search box or an open dropdown only closes that element
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('input, textarea, [role="menu"]') || document.querySelector('[role="menu"]')) return;
       if (compareMode) setCompareMode(false);
       else if (selectedIso) closeSidebar();
     };

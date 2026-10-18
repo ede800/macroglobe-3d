@@ -31,7 +31,7 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote
@@ -406,14 +406,14 @@ def r2(x: float) -> float:
     return round(float(x), 2)
 
 
-def http_get(url: str, **kwargs: Any) -> "requests.Response":
+def http_get(url: str, retries: int = 3, timeout: float = HTTP_TIMEOUT, **kwargs: Any) -> "requests.Response":
     if requests is None:
         raise RuntimeError("requests is not installed")
     headers = {"User-Agent": USER_AGENT, **kwargs.pop("headers", {})}
     last_exc: Exception | None = None
-    for attempt in range(3):
+    for attempt in range(retries):
         try:
-            resp = requests.get(url, headers=headers, timeout=HTTP_TIMEOUT, **kwargs)
+            resp = requests.get(url, headers=headers, timeout=timeout, **kwargs)
             if resp.status_code == 429:
                 time.sleep(5 * (attempt + 1))
                 continue
@@ -421,8 +421,22 @@ def http_get(url: str, **kwargs: Any) -> "requests.Response":
             return resp
         except Exception as exc:  # noqa: BLE001 - network errors are all handled the same way
             last_exc = exc
-            time.sleep(1.5 * (attempt + 1))
+            if attempt + 1 < retries:
+                time.sleep(1.5 * (attempt + 1))
     raise RuntimeError(f"GET failed after retries: {url} ({last_exc})")
+
+
+def fetch_json_parallel(requests_by_key: dict[Any, tuple[str, dict[str, Any] | None]], workers: int = 6) -> dict[Any, Any]:
+    """GET several JSON endpoints concurrently. Values are the decoded JSON or the exception raised."""
+    def task(item: tuple[Any, tuple[str, dict[str, Any] | None]]) -> tuple[Any, Any]:
+        key, (url, params) = item
+        try:
+            return key, http_get(url, params=params).json()
+        except Exception as exc:  # noqa: BLE001
+            return key, exc
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        return dict(pool.map(task, requests_by_key.items()))
 
 
 # ---------------------------------------------------------------------------
@@ -458,11 +472,16 @@ def fetch_world_bank() -> dict[str, dict[str, Series]]:
     current_year = datetime.now(timezone.utc).year
     start = current_year - 12
     out: dict[str, dict[str, Series]] = {}
+    payloads = fetch_json_parallel({
+        indicator: (f"https://api.worldbank.org/v2/country/all/indicator/{indicator}"
+                    f"?format=json&date={start}:{current_year}&per_page=20000", None)
+        for indicator in WB_INDICATORS
+    }, workers=8)
     for indicator, (fld, _max_age) in WB_INDICATORS.items():
-        url = (f"https://api.worldbank.org/v2/country/all/indicator/{indicator}"
-               f"?format=json&date={start}:{current_year}&per_page=20000")
         try:
-            payload = http_get(url).json()
+            payload = payloads[indicator]
+            if isinstance(payload, Exception):
+                raise payload
             if not isinstance(payload, list) or len(payload) < 2 or payload[1] is None:
                 raise ValueError(f"unexpected payload: {str(payload)[:160]}")
             n = 0
@@ -507,11 +526,17 @@ def fetch_imf_weo() -> tuple[dict[str, dict[str, Series]], str | None]:
     last_year = datetime.now(timezone.utc).year - 1  # later years are pure forecasts
 
     out: dict[str, dict[str, Series]] = {}
+    payloads = fetch_json_parallel({
+        subject: (f"{DBNOMICS}/series/IMF/{vintage}",
+                  {"dimensions": json.dumps({"weo-subject": [subject]}), "observations": "1", "limit": "1000"})
+        for subject in IMF_SUBJECTS
+    }, workers=4)
     for subject, fld in IMF_SUBJECTS.items():
         try:
-            resp = http_get(f"{DBNOMICS}/series/IMF/{vintage}",
-                            params={"dimensions": json.dumps({"weo-subject": [subject]}), "observations": "1", "limit": "1000"})
-            docs = resp.json()["series"]["docs"]
+            payload = payloads[subject]
+            if isinstance(payload, Exception):
+                raise payload
+            docs = payload["series"]["docs"]
         except Exception as exc:  # noqa: BLE001
             log(f"IMF WEO {subject} FAILED ({exc})")
             continue
@@ -577,13 +602,19 @@ EXPOSURE_AXES = [
 def fetch_dot(iso2_to_iso3: dict[str, str]) -> dict[str, dict[str, dict[str, dict[int, float]]]]:
     """{iso3: {flow: {partner: {year: value}}}} from the IMF Direction of Trade Statistics."""
     out: dict[str, dict[str, dict[str, dict[int, float]]]] = {}
+    payloads = fetch_json_parallel({
+        (indicator, code): (f"{DBNOMICS}/series/IMF/DOT", {
+            "dimensions": json.dumps({"FREQ": ["A"], "INDICATOR": [indicator], "COUNTERPART_AREA": [code]}),
+            "observations": "1", "limit": "1000"})
+        for indicator in DOT_FLOWS for code in DOT_PARTNERS
+    }, workers=4)
     for indicator, flow in DOT_FLOWS.items():
         for code, partner in DOT_PARTNERS.items():
             try:
-                resp = http_get(f"{DBNOMICS}/series/IMF/DOT", params={
-                    "dimensions": json.dumps({"FREQ": ["A"], "INDICATOR": [indicator], "COUNTERPART_AREA": [code]}),
-                    "observations": "1", "limit": "1000"})
-                docs = resp.json()["series"]["docs"]
+                payload = payloads[(indicator, code)]
+                if isinstance(payload, Exception):
+                    raise payload
+                docs = payload["series"]["docs"]
             except Exception as exc:  # noqa: BLE001
                 log(f"IMF DOT {indicator}/{code} FAILED ({exc})")
                 continue
@@ -697,15 +728,18 @@ def fetch_owid(slug: str) -> dict[str, dict[int, float]]:
 
 
 def fetch_all_owid() -> dict[str, dict[str, dict[int, float]]]:
-    result: dict[str, dict[str, dict[int, float]]] = {}
-    for key, slug in OWID_SERIES.items():
+    def task(item: tuple[str, str]) -> tuple[str, dict[str, dict[int, float]]]:
+        key, slug = item
         try:
-            result[key] = fetch_owid(slug)
-            log(f"OWID {slug:<32} -> {len(result[key])} pays")
+            data = fetch_owid(slug)
+            log(f"OWID {slug:<32} -> {len(data)} pays")
+            return key, data
         except Exception as exc:  # noqa: BLE001
             log(f"OWID {slug} FAILED ({exc})")
-            result[key] = {}
-    return result
+            return key, {}
+
+    with ThreadPoolExecutor(max_workers=len(OWID_SERIES)) as pool:
+        return dict(pool.map(task, OWID_SERIES.items()))
 
 
 def owid_latest(series: dict[int, float] | None, max_year: int, max_age: int) -> tuple[int, float] | None:
@@ -1231,7 +1265,7 @@ def fetch_google_news(query: str) -> list[dict[str, str]]:
         raise RuntimeError("feedparser is not installed")
     q = f"{query} {ECON_QUERY} when:2d"
     url = f"https://news.google.com/rss/search?q={quote(q)}&hl=en-US&gl=US&ceid=US:en"
-    feed = feedparser.parse(http_get(url).content)
+    feed = feedparser.parse(http_get(url, retries=1, timeout=12).content)
     items = []
     for e in feed.entries[:60]:
         src = ""
@@ -1246,14 +1280,14 @@ def fetch_gdelt(query: str) -> list[dict[str, str]]:
     url = ("https://api.gdeltproject.org/api/v2/doc/doc"
            f"?query={quote(q)}&mode=artlist&maxrecords=60&format=json&timespan=2d&sort=datedesc")
     try:
-        data = http_get(url).json()
+        data = http_get(url, retries=1, timeout=15).json()
     except ValueError:
         return []
     return [{"title": a.get("title", ""), "url": a.get("url", ""), "source": a.get("domain", "")}
             for a in data.get("articles", [])]
 
 
-GDELT_BUDGET_SECONDS = 240
+GDELT_BUDGET_SECONDS = 90
 
 
 def fetch_news_sentiment(countries: list[dict[str, Any]]) -> dict[str, NewsResult]:
@@ -1264,17 +1298,20 @@ def fetch_news_sentiment(countries: list[dict[str, Any]]) -> dict[str, NewsResul
 
     def google_task(c: dict[str, Any]) -> tuple[str, NewsResult | None]:
         try:
-            time.sleep(0.2)
+            time.sleep(0.1)
             return c["iso3"], score_titles(analyzer, fetch_google_news(news_query(c["iso3"], c["name"])), "Google News RSS")
         except Exception as exc:  # noqa: BLE001
             log(f"Google News {c['iso3']} failed: {exc}")
             return c["iso3"], None
 
     results: dict[str, NewsResult] = {}
-    with ThreadPoolExecutor(max_workers=6) as pool:
-        for iso, res in pool.map(google_task, countries):
-            if res is not None:
-                results[iso] = res
+    # fast first pass, then one gentler pass over the misses (transient timeouts / throttling)
+    for batch, workers in ((countries, 10), (None, 4)):
+        todo = batch if batch is not None else [c for c in countries if c["iso3"] not in results]
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            for iso, res in pool.map(google_task, todo):
+                if res is not None:
+                    results[iso] = res
 
     # GDELT asks for one request every 5 s: only retry the largest economies without news, within a time budget.
     missing = sorted((c for c in countries if c["iso3"] not in results), key=lambda c: -c.get("gdp", 0))
@@ -1642,12 +1679,13 @@ def load_previous(path: Path) -> dict[str, Any]:
         countries = {c["iso3"]: c for c in data.get("countries", [])}
     except Exception:  # noqa: BLE001 - missing or corrupt file simply means no cache
         return {}
-    try:  # re-attach the split-off headlines / history so the sentiment cache keeps working
+    try:  # re-attach the split-off fields: sentiment cache, and full entries reused when a country loses its data
         details = json.loads(details_path(path).read_text(encoding="utf-8"))["countries"]
         for iso3, d in details.items():
             if iso3 in countries:
                 countries[iso3].setdefault("sentiment", {}).setdefault("headlines", d.get("headlines", []))
                 countries[iso3]["sentiment"].setdefault("history", d.get("sentiment_history", []))
+                countries[iso3].setdefault("projection", {}).setdefault("series", d.get("series", []))
     except Exception:  # noqa: BLE001
         pass
     return countries

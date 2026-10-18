@@ -68,6 +68,9 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
   const { width, height } = useViewport();
   const [hoverIso, setHoverIso] = useState<string | null>(null);
   const idleTimer = useRef<number | undefined>(undefined);
+  // read by the idle timer when it fires, not when it was armed (a country may have been opened in between)
+  const selectedRef = useRef(selectedIso);
+  selectedRef.current = selectedIso;
 
   const isMobile = width < 768;
   const defaultAltitude = isMobile ? 3.2 : 2.3;
@@ -96,9 +99,9 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
     setAutoRotate(false);
     window.clearTimeout(idleTimer.current);
     idleTimer.current = window.setTimeout(() => {
-      if (!selectedIso) setAutoRotate(true);
+      if (!selectedRef.current) setAutoRotate(true);
     }, 30000);
-  }, [selectedIso, setAutoRotate]);
+  }, [setAutoRotate]);
 
   useImperativeHandle(
     ref,
@@ -138,27 +141,36 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
 
   const def = FILTERS[filter];
 
+  // Colours depend on the filter / data / isolation only: computed once per change, so hovering
+  // (which re-evaluates every polygon accessor) is a table lookup instead of a colour interpolation.
+  const palette = useMemo(() => {
+    const out = new Map<string, { cap: string; capHot: string; side: string; marker: string }>();
+    for (const c of countries.values()) {
+      if (matched && !matched.has(c.iso3)) {
+        out.set(c.iso3, { cap: 'rgba(24, 28, 36, 0.28)', capHot: 'rgba(24, 28, 36, 0.28)', side: 'rgba(20, 24, 30, 0.1)', marker: 'rgba(60, 66, 76, 0.35)' });
+      } else if (!def.available(c)) {
+        out.set(c.iso3, { cap: withAlpha('#2a2f38', 0.75), capHot: withAlpha('#2a2f38', 0.75), side: 'rgba(20, 26, 34, 0.3)', marker: '#3a404a' });
+      } else {
+        const base = def.color(c);
+        out.set(c.iso3, { cap: withAlpha(base, 0.88), capHot: withAlpha(base, 1), side: withAlpha(base, 0.35), marker: base });
+      }
+    }
+    return out;
+  }, [countries, def, matched]);
+
   const capColor = useCallback(
     (obj: object) => {
-      const f = obj as CountryFeature;
-      const c = countries.get(f.properties.ISO_A3);
-      if (!c) return withAlpha(COLORS.noData, 0.55);
-      if (matched && !matched.has(c.iso3)) return 'rgba(24, 28, 36, 0.28)';
-      if (!def.available(c)) return withAlpha('#2a2f38', 0.75);
-      const base = def.color(c);
-      const highlighted = f.properties.ISO_A3 === hoverIso || f.properties.ISO_A3 === selectedIso || f.properties.ISO_A3 === compareIso;
-      return withAlpha(base, highlighted ? 1 : 0.88);
+      const iso = (obj as CountryFeature).properties.ISO_A3;
+      const p = palette.get(iso);
+      if (!p) return withAlpha(COLORS.noData, 0.55);
+      return iso === hoverIso || iso === selectedIso || iso === compareIso ? p.capHot : p.cap;
     },
-    [countries, def, hoverIso, selectedIso, compareIso, matched],
+    [palette, hoverIso, selectedIso, compareIso],
   );
 
   const sideColor = useCallback(
-    (obj: object) => {
-      const c = countries.get((obj as CountryFeature).properties.ISO_A3);
-      if (c && matched && !matched.has(c.iso3)) return 'rgba(20, 24, 30, 0.1)';
-      return c && def.available(c) ? withAlpha(def.color(c), 0.35) : 'rgba(20, 26, 34, 0.3)';
-    },
-    [countries, def, matched],
+    (obj: object) => palette.get((obj as CountryFeature).properties.ISO_A3)?.side ?? 'rgba(20, 26, 34, 0.3)',
+    [palette],
   );
 
   const strokeColor = useCallback(
@@ -245,11 +257,7 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
         pointsData={markers}
         pointLat={(p: object) => (p as MarkerPoint).country.lat}
         pointLng={(p: object) => (p as MarkerPoint).country.lng}
-        pointColor={(p: object) => {
-          const c = (p as MarkerPoint).country;
-          if (matched && !matched.has(c.iso3)) return 'rgba(60, 66, 76, 0.35)';
-          return def.available(c) ? def.color(c) : '#3a404a';
-        }}
+        pointColor={(p: object) => palette.get((p as MarkerPoint).country.iso3)?.marker ?? '#3a404a'}
         pointAltitude={(p: object) => {
           const iso = (p as MarkerPoint).country.iso3;
           return iso === selectedIso || iso === compareIso ? 0.07 : iso === hoverIso ? 0.045 : 0.025;

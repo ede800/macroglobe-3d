@@ -12,12 +12,14 @@ macroglobe-3d/
 │   └── requirements.txt
 ├── public/
 │   ├── data/
-│   │   ├── macro_data.json      # jeu de données (~210 pays), réécrit chaque jour
+│   │   ├── macro_data.json      # données affichées au démarrage (~210 pays), réécrit chaque jour
+│   │   ├── macro_details.json   # séries de projection + titres d'actualité, chargés après le premier affichage
 │   │   └── countries.geojson    # frontières Natural Earth 1:110m (allégé)
 │   └── textures/                # earth-dark.jpg, earth-topology.png, night-sky.png
 ├── src/
 │   ├── main.tsx · App.tsx · index.css · types.ts · vite-env.d.ts
 │   ├── lib/metrics.ts           # échelles de couleur, formats, définition des filtres
+│   ├── lib/stubs.ts             # remplace WebGPU / TSL / h3-js (non utilisés) dans le bundle
 │   └── components/
 │       ├── GlobeView.tsx        # globe, choroplèthe, survol, zoom caméra
 │       ├── CountrySidebar.tsx   # panneau pays : Économie & USD · Démographie & Santé · Politique & Pouvoir · Projections

@@ -1104,7 +1104,7 @@ export default function CountrySidebar({ country, compareMode, activeFilter, onC
                       style={{ background: h.compound > 0.05 ? COLORS.up : h.compound < -0.05 ? COLORS.down : COLORS.muted }}
                       aria-hidden
                     />
-                    <a href={h.url} target="_blank" rel="noopener noreferrer" className="text-terminal-sub transition group-hover:text-terminal-ink">
+                    <a href={/^https?:\/\//i.test(h.url) ? h.url : undefined} target="_blank" rel="noopener noreferrer" className="text-terminal-sub transition group-hover:text-terminal-ink">
                       {h.title}
                       <span className="mt-0.5 block text-[10px] text-terminal-muted">
                         {h.source && `${h.source} · `}
