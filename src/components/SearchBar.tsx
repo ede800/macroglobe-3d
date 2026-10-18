@@ -22,7 +22,7 @@ export default function SearchBar({ countries, onSelect, placeholder = 'Recherch
     const q = normalize(query.trim());
     if (!q) return countries.slice(0, 8);
     return countries
-      .filter((c) => [c.name_fr, c.name, c.iso3, c.iso2, c.currency].some((v) => normalize(v).includes(q)))
+      .filter((c) => [c.name_fr, c.name, c.iso3, c.iso2, c.currency ?? ''].some((v) => normalize(v).includes(q)))
       .sort((x, y) => Number(!normalize(x.name_fr).startsWith(q)) - Number(!normalize(y.name_fr).startsWith(q)))
       .slice(0, 8);
   }, [countries, query]);

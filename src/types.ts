@@ -8,6 +8,7 @@ export type UsdRegime =
   | 'managed_usd'
   | 'managed_basket'
   | 'free_float'
+  | 'euro_peg'
   | 'euro_member'
   | 'issuer';
 
@@ -120,13 +121,22 @@ export interface Projection {
   series: ProjectionPoint[];
 }
 
+export interface DataQuality {
+  score: number; // % of core indicators backed by World Bank / IMF data (not estimated)
+  estimated: string[];
+  usd_proxies: string[];
+}
+
 export interface Country {
   iso3: string;
   iso2: string;
   name: string;
-  name_fr: string;
+  name_fr: string; // filled client-side via Intl.DisplayNames when the pipeline has no French name
   region: string;
-  currency: string;
+  income: string | null;
+  currency: string | null;
+  stale?: boolean;
+  data_quality: DataQuality;
   lat: number;
   lng: number;
   gdp_rank: number;
@@ -142,7 +152,8 @@ export interface MacroMeta {
   schema_version: number;
   generated_at: string;
   mode: 'online' | 'offline';
-  status: { world_bank: string; news: string };
+  status: { world_bank: string; imf?: string; news: string };
+  imf_vintage?: string | null;
   country_count: number;
   sources: { name: string; url: string }[];
   methodology: {

@@ -94,3 +94,62 @@ body {
     border: 1px solid CanvasText;
   }
 }
+
+/* Scrolling ticker tape */
+.ticker-track {
+  animation-name: ticker-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.ticker-mask:hover .ticker-track {
+  animation-play-state: paused;
+}
+.ticker-mask {
+  mask-image: linear-gradient(90deg, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%);
+}
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Panels that only fit on tall desktop screens */
+.tall-only {
+  display: none;
+}
+@media (min-width: 1024px) and (min-height: 860px) {
+  .tall-only {
+    display: block;
+  }
+}
+
+/* Soft vignette over the globe canvas */
+.vignette {
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(2, 4, 8, 0.75) 100%);
+}
+
+/* Loading screen orbit */
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.orbit {
+  animation: orbit 2.4s linear infinite;
+  transform-origin: 50% 50%;
+}
+.orbit-slow {
+  animation: orbit 6s linear infinite reverse;
+  transform-origin: 50% 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track,
+  .orbit,
+  .orbit-slow {
+    animation: none;
+  }
+}

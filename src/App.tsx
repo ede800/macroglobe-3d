@@ -1,14 +1,38 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, Database, Globe2, Info, Loader2, RotateCcw, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  BarChart3,
+  DollarSign,
+  Globe2,
+  Hourglass,
+  HeartPulse,
+  Info,
+  Plane,
+  RotateCcw,
+  TrendingUp,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 import GlobeView, { type GlobeViewHandle } from './components/GlobeView';
 import CountrySidebar from './components/CountrySidebar';
 import ComparisonModal from './components/ComparisonModal';
 import SearchBar from './components/SearchBar';
 import MapLegend from './components/MapLegend';
+import WorldPanel from './components/WorldPanel';
+import Ticker from './components/Ticker';
 import type { CountryCollection, FilterKey, MacroData } from './types';
-import { FILTER_ORDER, FILTERS, fmt } from './lib/metrics';
+import { FILTER_ORDER, FILTERS, normalizeData } from './lib/metrics';
 
 const BASE = import.meta.env.BASE_URL;
+
+const FILTER_ICONS: Record<FilterKey, LucideIcon> = {
+  confidence: HeartPulse,
+  gdp: BarChart3,
+  tourism: Plane,
+  usd: DollarSign,
+  traj10: TrendingUp,
+  traj25: Hourglass,
+};
 
 type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; data: MacroData; geo: CountryCollection };
 
@@ -18,9 +42,41 @@ async function loadJson<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+function LoadingScreen() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-5 text-terminal-sub">
+      <svg width="88" height="88" viewBox="0 0 88 88" aria-hidden>
+        <defs>
+          <radialGradient id="ld" cx="40%" cy="35%" r="70%">
+            <stop offset="0%" stopColor="#1d3b66" />
+            <stop offset="100%" stopColor="#05070b" />
+          </radialGradient>
+        </defs>
+        <circle cx="44" cy="44" r="30" fill="url(#ld)" stroke="rgba(57,135,229,0.5)" />
+        <g className="orbit">
+          <ellipse cx="44" cy="44" rx="12" ry="30" fill="none" stroke="rgba(57,135,229,0.55)" />
+        </g>
+        <g className="orbit-slow">
+          <ellipse cx="44" cy="44" rx="42" ry="14" fill="none" stroke="rgba(245,166,35,0.6)" strokeDasharray="4 6" />
+          <circle cx="86" cy="44" r="3" fill="#f5a623" />
+        </g>
+      </svg>
+      <div className="text-center">
+        <div className="font-mono text-sm font-semibold tracking-[0.2em] text-terminal-ink">
+          MACROGLOBE<span className="text-terminal-accent"> 3D</span>
+        </div>
+        <div className="mt-1 text-xs text-terminal-muted">Chargement des données macroéconomiques mondiales…</div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
-  const [filter, setFilter] = useState<FilterKey>('confidence');
+  const [filter, setFilter] = useState<FilterKey>(() => {
+    const requested = new URLSearchParams(window.location.search).get('filter');
+    return requested && requested in FILTERS ? (requested as FilterKey) : 'confidence';
+  });
   const [selectedIso, setSelectedIso] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
   const [compareIso, setCompareIso] = useState<string | null>(null);
@@ -29,7 +85,7 @@ export default function App() {
 
   useEffect(() => {
     Promise.all([loadJson<MacroData>('data/macro_data.json'), loadJson<CountryCollection>('data/countries.geojson')])
-      .then(([data, geo]) => setState({ status: 'ready', data, geo }))
+      .then(([data, geo]) => setState({ status: 'ready', data: normalizeData(data), geo }))
       .catch((err: unknown) => setState({ status: 'error', message: err instanceof Error ? err.message : String(err) }));
   }, []);
 
@@ -68,9 +124,12 @@ export default function App() {
 
   useEffect(() => {
     if (state.status !== 'ready') return;
-    const url = selectedIso ? `#${selectedIso}` : window.location.pathname + window.location.search;
-    window.history.replaceState(null, '', url);
-  }, [selectedIso, state.status]);
+    const params = new URLSearchParams(window.location.search);
+    if (filter === 'confidence') params.delete('filter');
+    else params.set('filter', filter);
+    const query = params.toString();
+    window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}${selectedIso ? `#${selectedIso}` : ''}`);
+  }, [selectedIso, filter, state.status]);
 
   const closeSidebar = useCallback(() => {
     setSelectedIso(null);
@@ -88,13 +147,7 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [compareMode, compared, selectedIso, closeSidebar]);
 
-  if (state.status === 'loading') {
-    return (
-      <div className="flex h-full items-center justify-center gap-3 text-terminal-sub">
-        <Loader2 className="animate-spin text-terminal-accent" size={20} /> Chargement des données macroéconomiques…
-      </div>
-    );
-  }
+  if (state.status === 'loading') return <LoadingScreen />;
 
   if (state.status === 'error') {
     return (
@@ -125,14 +178,17 @@ export default function App() {
         compareIso={compareIso}
         onSelect={handleSelect}
       />
+      <div className="vignette pointer-events-none absolute inset-0" />
 
       {/* Top bar */}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-20 p-3 md:p-4">
         <div className="glass-panel pointer-events-auto flex flex-col gap-3 rounded-xl px-3 py-2.5 lg:flex-row lg:items-center lg:gap-4 lg:px-4">
           <div className="flex items-center gap-2.5">
-            <Globe2 size={22} className="text-terminal-accent" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-terminal-accent/30 to-terminal-up/20 ring-1 ring-white/10">
+              <Globe2 size={18} className="text-terminal-accent" />
+            </div>
             <div className="leading-tight">
-              <h1 className="font-mono text-sm font-semibold tracking-wide text-terminal-ink">
+              <h1 className="font-mono text-sm font-semibold tracking-[0.12em] text-terminal-ink">
                 MACROGLOBE<span className="text-terminal-accent"> 3D</span>
               </h1>
               <p className="hidden text-[10px] text-terminal-muted sm:block">{meta.country_count} économies · mise à jour quotidienne</p>
@@ -142,20 +198,31 @@ export default function App() {
             </button>
           </div>
 
-          <nav className="-mx-1 flex min-w-0 gap-1 overflow-x-auto px-1 pb-0.5 lg:flex-1 lg:justify-center" aria-label="Filtre de coloration du globe">
-            {FILTER_ORDER.map((key) => (
-              <button
-                key={key}
-                onClick={() => setFilter(key)}
-                aria-pressed={filter === key}
-                className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition ${
-                  filter === key ? 'bg-terminal-accent text-black' : 'text-terminal-sub hover:bg-white/[0.06] hover:text-terminal-ink'
-                }`}
-              >
-                <span className="hidden 2xl:inline">{FILTERS[key].label}</span>
-                <span className="2xl:hidden">{FILTERS[key].short}</span>
-              </button>
-            ))}
+          <nav
+            className="-mx-1 flex min-w-0 gap-1 overflow-x-auto rounded-lg px-1 pb-0.5 lg:flex-1 lg:justify-center lg:pb-0"
+            aria-label="Filtre de coloration du globe"
+          >
+            {FILTER_ORDER.map((key) => {
+              const Icon = FILTER_ICONS[key];
+              const active = filter === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setFilter(key)}
+                  aria-pressed={active}
+                  title={FILTERS[key].label}
+                  className={`flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                    active
+                      ? 'bg-terminal-accent text-black shadow-[0_0_18px_-4px_rgba(245,166,35,0.8)]'
+                      : 'text-terminal-sub hover:bg-white/[0.06] hover:text-terminal-ink'
+                  }`}
+                >
+                  <Icon size={13} strokeWidth={2.25} />
+                  <span className="hidden min-[1800px]:inline">{FILTERS[key].label}</span>
+                  <span className="min-[1800px]:hidden">{FILTERS[key].short}</span>
+                </button>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-2 lg:w-72">
@@ -179,25 +246,26 @@ export default function App() {
         </div>
       )}
 
-      {/* Bottom-left legend + data status */}
-      <div className={`pointer-events-none absolute bottom-4 left-4 z-10 flex-col gap-2 ${selected ? 'hidden md:flex' : 'flex'}`}>
+      {/* Left column: world pulse (tall screens) + legend */}
+      <div className="tall-only pointer-events-none absolute left-4 top-[88px] z-10">
+        <WorldPanel countries={countries} onSelect={handleSelect} />
+      </div>
+      <div className={`pointer-events-none absolute bottom-14 left-4 z-10 ${selected ? 'hidden md:block' : 'hidden sm:block'}`}>
         <MapLegend filter={filter} countries={countries} onSelect={handleSelect} />
-        <div className="glass-panel pointer-events-auto flex items-center gap-2 rounded-lg px-3 py-1.5 text-[10px] text-terminal-muted">
-          <Database size={12} />
-          <span>
-            Données : {fmt.date(meta.generated_at)} · WB {meta.status.world_bank} · Actu {meta.status.news}
-          </span>
-        </div>
       </div>
 
       {!selected && (
         <button
           onClick={() => globeRef.current?.resetView()}
-          className="glass-panel absolute bottom-4 right-4 z-10 hidden items-center gap-2 rounded-lg px-3 py-2 text-xs text-terminal-sub hover:text-terminal-ink md:flex"
+          className="glass-panel absolute bottom-14 right-4 z-10 hidden items-center gap-2 rounded-lg px-3 py-2 text-xs text-terminal-sub hover:text-terminal-ink md:flex"
         >
           <RotateCcw size={13} /> Vue globale
         </button>
       )}
+
+      <div className={selected ? 'hidden md:block' : undefined}>
+        <Ticker countries={countries} meta={meta} onSelect={handleSelect} />
+      </div>
 
       {selected && (
         <CountrySidebar
@@ -244,7 +312,7 @@ export default function App() {
                 <li key={n}>{n}</li>
               ))}
             </ul>
-            <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider text-terminal-muted">Sources</h3>
+            <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider text-terminal-muted">Sources & statut du jour</h3>
             <ul className="space-y-1">
               {meta.sources.map((s) => (
                 <li key={s.url}>
@@ -254,6 +322,9 @@ export default function App() {
                 </li>
               ))}
             </ul>
+            <p className="mt-3 font-mono text-[11px] text-terminal-muted">
+              Banque mondiale : {meta.status.world_bank} · FMI : {meta.status.imf ?? 'n.d.'} · Actualité : {meta.status.news}
+            </p>
             <p className="mt-4 text-[11px] text-terminal-muted">
               Outil pédagogique : les scores et projections sont des constructions mécaniques, pas des conseils d’investissement.
             </p>

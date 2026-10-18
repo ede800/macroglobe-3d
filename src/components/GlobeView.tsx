@@ -75,6 +75,15 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
     return [...countries.values()].filter((c) => !drawn.has(c.iso3)).map((country) => ({ country }));
   }, [features, countries]);
 
+  const rings = useMemo(
+    () =>
+      [selectedIso, compareIso]
+        .map((iso) => (iso ? countries.get(iso) : undefined))
+        .filter((c): c is Country => Boolean(c))
+        .map((c) => ({ lat: c.lat, lng: c.lng })),
+    [selectedIso, compareIso, countries],
+  );
+
   const setAutoRotate = useCallback((on: boolean) => {
     const controls = globeRef.current?.controls();
     if (controls) controls.autoRotate = on;
@@ -161,7 +170,7 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
       const iso = (obj as CountryFeature).properties.ISO_A3;
       const c = countries.get(iso);
       let alt = c ? 0.012 : 0.004;
-      if (c && filter === 'gdp') alt += Math.max(0, c.indicators.gdp_growth) * 0.012;
+      if (c && filter === 'gdp') alt += Math.min(8, Math.max(0, c.indicators.gdp_growth)) * 0.01;
       if (iso === selectedIso || iso === compareIso) alt += 0.05;
       else if (iso === hoverIso && c) alt += 0.035;
       return alt;
@@ -218,12 +227,29 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
         polygonsTransitionDuration={350}
         onPolygonHover={handleHover}
         onPolygonClick={handleClick}
+        showGraticules
+        ringsData={rings}
+        ringColor={() => (t: number) => `rgba(245, 166, 35, ${Math.max(0, 1 - t)})`}
+        ringMaxRadius={4.5}
+        ringPropagationSpeed={2.2}
+        ringRepeatPeriod={1100}
+        ringAltitude={0.012}
         pointsData={markers}
         pointLat={(p: object) => (p as MarkerPoint).country.lat}
         pointLng={(p: object) => (p as MarkerPoint).country.lng}
         pointColor={(p: object) => def.color((p as MarkerPoint).country)}
-        pointAltitude={(p: object) => ((p as MarkerPoint).country.iso3 === selectedIso ? 0.08 : 0.04)}
-        pointRadius={0.9}
+        pointAltitude={(p: object) => {
+          const iso = (p as MarkerPoint).country.iso3;
+          return iso === selectedIso || iso === compareIso ? 0.07 : iso === hoverIso ? 0.045 : 0.025;
+        }}
+        pointRadius={0.38}
+        pointResolution={16}
+        onPointHover={(p: object | null) => {
+          const iso = p ? (p as MarkerPoint).country.iso3 : null;
+          setHoverIso(iso);
+          document.body.style.cursor = iso ? 'pointer' : 'grab';
+          if (iso) pauseRotation();
+        }}
         pointLabel={(p: object) => {
           const c = (p as MarkerPoint).country;
           return tooltipHtml(c, c.name_fr, filter);
