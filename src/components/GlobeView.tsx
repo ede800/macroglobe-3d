@@ -97,7 +97,7 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
     window.clearTimeout(idleTimer.current);
     idleTimer.current = window.setTimeout(() => {
       if (!selectedIso) setAutoRotate(true);
-    }, 15000);
+    }, 30000);
   }, [selectedIso, setAutoRotate]);
 
   useImperativeHandle(
@@ -123,7 +123,7 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
     if (!globe) return;
     const controls = globe.controls();
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.35;
+    controls.autoRotateSpeed = 0.25;
     controls.enableDamping = true;
     controls.minDistance = 130;
     controls.maxDistance = 700;

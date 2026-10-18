@@ -5,6 +5,7 @@ import {
   Globe2,
   Hourglass,
   Info,
+  ListOrdered,
   Radar,
   RotateCcw,
   SlidersHorizontal,
@@ -22,6 +23,7 @@ import WorldPanel from './components/WorldPanel';
 import Ticker from './components/Ticker';
 import FilterMenu from './components/FilterMenu';
 import QuickFilters from './components/QuickFilters';
+import OnboardingHint from './components/OnboardingHint';
 import type { CountryCollection, FilterKey, MacroData, QuickFilters as QuickFiltersState } from './types';
 import { DEFAULT_QUICK_FILTERS, FILTER_GROUPS, FILTERS, isQuickFilterActive, matchesQuickFilters, normalizeData } from './lib/metrics';
 
@@ -83,6 +85,7 @@ export default function App() {
   const [showAbout, setShowAbout] = useState(false);
   const [quick, setQuick] = useState<QuickFiltersState>(DEFAULT_QUICK_FILTERS);
   const [showQuick, setShowQuick] = useState(() => window.innerWidth >= 768);
+  const [showLegendMobile, setShowLegendMobile] = useState(false);
   const globeRef = useRef<GlobeViewHandle>(null);
 
   useEffect(() => {
@@ -214,7 +217,7 @@ export default function App() {
           </div>
 
           <nav
-            className="-mx-1 flex min-w-0 gap-1 overflow-x-auto rounded-lg px-1 pb-0.5 lg:flex-1 lg:justify-center lg:pb-0"
+            className="-mx-1 flex min-w-0 gap-1 overflow-x-auto rounded-lg px-1 pb-0.5 max-lg:pr-8 max-lg:[mask-image:linear-gradient(90deg,#000_82%,transparent)] lg:flex-1 lg:justify-center lg:pb-0"
             aria-label="Mode de coloration du globe"
           >
             {FILTER_GROUPS.filter((g) => g.id !== 'projections').map((g) => (
@@ -276,9 +279,36 @@ export default function App() {
       <div className="tall-only pointer-events-none absolute left-4 top-[var(--chrome-top)] z-10">
         <WorldPanel countries={countries} onSelect={handleSelect} />
       </div>
-      <div className={`pointer-events-none absolute bottom-14 left-4 z-10 ${selected ? 'hidden md:block' : 'hidden sm:block'}`}>
-        <MapLegend filter={filter} countries={legendCountries} onSelect={handleSelect} />
+      <div
+        className={`pointer-events-none absolute bottom-14 left-4 z-10 ${
+          selected ? 'hidden md:block' : showLegendMobile ? 'block max-sm:bottom-[104px] max-sm:left-1/2 max-sm:-translate-x-1/2' : 'hidden sm:block'
+        }`}
+      >
+        <MapLegend
+          filter={filter}
+          countries={legendCountries}
+          onSelect={(iso3) => {
+            setShowLegendMobile(false);
+            handleSelect(iso3);
+          }}
+        />
       </div>
+
+      {/* Phones: the legend lives behind a button so the globe keeps the screen */}
+      {!selected && (
+        <button
+          onClick={() => setShowLegendMobile((v) => !v)}
+          aria-expanded={showLegendMobile}
+          className={`glass-panel absolute bottom-14 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full px-4 py-2 text-xs font-medium sm:hidden ${
+            showLegendMobile ? 'text-terminal-accent' : 'text-terminal-ink'
+          }`}
+        >
+          {showLegendMobile ? <X size={14} /> : <ListOrdered size={14} />}
+          {showLegendMobile ? 'Masquer la légende' : `Légende · ${FILTERS[filter].short}`}
+        </button>
+      )}
+
+      <OnboardingHint hasSelection={Boolean(selected)} suppressed={showLegendMobile} />
 
       {!selected && (
         <button

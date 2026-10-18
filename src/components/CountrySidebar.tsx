@@ -793,6 +793,8 @@ function QualityBadge({ country }: { country: Country }) {
 export default function CountrySidebar({ country, compareMode, activeFilter, onClose, onCompare, onShowOnGlobe }: CountrySidebarProps) {
   // Opening a country lands on the tab matching the globe colour mode (politics -> Politique, etc.).
   const [tab, setTab] = useState<Tab>(() => tabForFilter(activeFilter));
+  // Phones: the bottom sheet can shrink to its header so the globe stays visible.
+  const [collapsed, setCollapsed] = useState(false);
   const { indicators: ind, confidence, usd, sentiment, projection, sources } = country;
   const tint = confidenceColor(confidence.score);
   const growthDelta = ind.gdp_growth - ind.growth_5y_avg;
@@ -803,8 +805,16 @@ export default function CountrySidebar({ country, compareMode, activeFilter, onC
       className="glass-panel fixed inset-x-0 bottom-0 z-30 flex max-h-[74vh] flex-col overflow-hidden rounded-t-2xl animate-fade-in md:inset-x-auto md:bottom-14 md:right-4 md:top-[var(--chrome-top)] md:max-h-none md:w-[440px] md:rounded-2xl md:animate-slide-in"
       aria-label={`Tableau de bord ${country.name_fr}`}
     >
+      <button
+        onClick={() => setCollapsed((v) => !v)}
+        className="flex w-full justify-center pb-0.5 pt-2 md:hidden"
+        aria-label={collapsed ? 'Agrandir le panneau' : 'Réduire le panneau'}
+        aria-expanded={!collapsed}
+      >
+        <span className="h-1.5 w-12 rounded-full bg-white/25" />
+      </button>
       <header
-        className="relative px-5 pb-4 pt-5"
+        className={`relative px-5 pb-4 pt-2 md:pt-5 ${collapsed ? 'max-md:pb-3' : ''}`}
         style={{ background: `linear-gradient(135deg, ${withAlpha(tint, 0.3)} 0%, ${withAlpha(tint, 0.06)} 45%, transparent 75%)` }}
       >
         <div className="flex items-start gap-3">
@@ -832,9 +842,15 @@ export default function CountrySidebar({ country, compareMode, activeFilter, onC
           </div>
         </div>
 
+        {collapsed && (
+          <button onClick={() => setCollapsed(false)} className="mt-3 w-full rounded-lg border border-white/15 bg-black/25 py-1.5 text-xs text-terminal-sub md:hidden">
+            Voir le détail
+          </button>
+        )}
+
         <button
           onClick={onCompare}
-          className={`mt-4 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+          className={`${collapsed ? 'max-md:hidden' : ''} mt-4 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition ${
             compareMode
               ? 'border-terminal-accent bg-terminal-accent/15 text-terminal-accent'
               : 'border-white/15 bg-black/25 text-terminal-ink hover:border-terminal-accent/60 hover:text-terminal-accent'
@@ -845,7 +861,7 @@ export default function CountrySidebar({ country, compareMode, activeFilter, onC
         </button>
       </header>
 
-      <nav className="flex border-b border-terminal-line px-2" role="tablist" aria-label="Sections du pays">
+      <nav className={`flex border-b border-terminal-line px-2 ${collapsed ? 'max-md:hidden' : ''}`} role="tablist" aria-label="Sections du pays">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -864,7 +880,7 @@ export default function CountrySidebar({ country, compareMode, activeFilter, onC
         ))}
       </nav>
 
-      <div className="flex-1 overflow-y-auto overscroll-contain pb-4" role="tabpanel">
+      <div className={`flex-1 overflow-y-auto overscroll-contain pb-4 ${collapsed ? 'max-md:hidden' : ''}`} role="tabpanel">
         {tab === 'economy' && (
           <>
             <Section title="Indicateurs clés" icon={<Activity size={13} />} aside={<span className="font-mono text-[10px] text-terminal-muted">{ind.gdp_year}</span>}>
