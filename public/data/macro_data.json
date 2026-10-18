@@ -1,7 +1,7 @@
 {
  "meta": {
   "schema_version": 1,
-  "generated_at": "2026-10-18T10:33:28+00:00",
+  "generated_at": "2026-10-18T10:37:07+00:00",
   "mode": "online",
   "status": {
    "world_bank": "ok (39/40 pays)",
@@ -149,19 +149,19 @@
     }
    },
    "confidence": {
-    "score": 51.0,
+    "score": 51.6,
     "label": "Neutre",
     "components": {
      "macro": 66.7,
      "fiscal": 25.1,
-     "sentiment": 56.0
+     "sentiment": 58.0
     },
     "subscores": {
      "growth": 51.4,
      "inflation": 85.4,
      "debt": 26.3,
      "current_account": 23.2,
-     "sentiment": 56.0
+     "sentiment": 58.0
     },
     "factors": [
      {
@@ -174,9 +174,9 @@
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 56.0,
-      "impact": 1.8,
-      "detail": "VADER moyen +0.06"
+      "subscore": 58.0,
+      "impact": 2.4,
+      "detail": "VADER moyen +0.08"
      },
      {
       "label": "Croissance du PIB",
@@ -202,7 +202,7 @@
     ]
    },
    "sentiment": {
-    "compound": 0.06,
+    "compound": 0.08,
     "n_articles": 40,
     "source": "Google News RSS",
     "headlines": [
@@ -245,11 +245,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 56.0,
+    "score": 58.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 56.0
+      "score": 58.0
      }
     ]
    },
@@ -266,8 +266,8 @@
     },
     "cagr_10": 2.44,
     "cagr_25": 2.04,
-    "gdp_10": 39163.7,
-    "gdp_25": 50956.5,
+    "gdp_10": 39172.8,
+    "gdp_25": 50971.6,
     "stability_10": 53.2,
     "stability_25": 54.1,
     "debt_10": 105.6,
@@ -278,179 +278,179 @@
       "gdp": 30769.7,
       "growth": 2.16,
       "debt": 115.8,
-      "stability": 51.0
+      "stability": 51.6
      },
      {
       "year": 2026,
-      "gdp": 31656.2,
-      "growth": 2.88,
+      "gdp": 31657.5,
+      "growth": 2.89,
       "debt": 114.2,
-      "stability": 51.9
+      "stability": 52.3
      },
      {
       "year": 2027,
-      "gdp": 32530.2,
+      "gdp": 32532.7,
       "growth": 2.76,
       "debt": 112.8,
-      "stability": 52.0
+      "stability": 52.3
      },
      {
       "year": 2028,
-      "gdp": 33392.5,
+      "gdp": 33396.0,
       "growth": 2.65,
       "debt": 111.6,
-      "stability": 52.1
+      "stability": 52.3
      },
      {
       "year": 2029,
-      "gdp": 34243.7,
+      "gdp": 34248.2,
       "growth": 2.55,
       "debt": 110.4,
-      "stability": 52.2
-     },
-     {
-      "year": 2030,
-      "gdp": 35084.7,
-      "growth": 2.46,
-      "debt": 109.4,
       "stability": 52.4
      },
      {
-      "year": 2031,
-      "gdp": 35916.1,
-      "growth": 2.37,
-      "debt": 108.5,
-      "stability": 52.6
+      "year": 2030,
+      "gdp": 35090.1,
+      "growth": 2.46,
+      "debt": 109.4,
+      "stability": 52.5
      },
      {
-      "year": 2032,
-      "gdp": 36739.0,
-      "growth": 2.29,
-      "debt": 107.6,
+      "year": 2031,
+      "gdp": 35922.4,
+      "growth": 2.37,
+      "debt": 108.4,
       "stability": 52.7
      },
      {
+      "year": 2032,
+      "gdp": 36746.0,
+      "growth": 2.29,
+      "debt": 107.6,
+      "stability": 52.8
+     },
+     {
       "year": 2033,
-      "gdp": 37553.9,
+      "gdp": 37561.7,
       "growth": 2.22,
-      "debt": 106.9,
+      "debt": 106.8,
       "stability": 52.9
      },
      {
       "year": 2034,
-      "gdp": 38361.9,
+      "gdp": 38370.4,
       "growth": 2.15,
       "debt": 106.2,
-      "stability": 53.0
+      "stability": 53.1
      },
      {
       "year": 2035,
-      "gdp": 39163.7,
+      "gdp": 39172.8,
       "growth": 2.09,
       "debt": 105.6,
       "stability": 53.2
      },
      {
       "year": 2036,
-      "gdp": 39960.1,
+      "gdp": 39969.8,
       "growth": 2.03,
       "debt": 105.0,
       "stability": 53.3
      },
      {
       "year": 2037,
-      "gdp": 40752.0,
+      "gdp": 40762.2,
       "growth": 1.98,
       "debt": 104.5,
       "stability": 53.4
      },
      {
       "year": 2038,
-      "gdp": 41540.0,
+      "gdp": 41550.7,
       "growth": 1.93,
       "debt": 104.1,
       "stability": 53.5
      },
      {
       "year": 2039,
-      "gdp": 42325.0,
+      "gdp": 42336.2,
       "growth": 1.89,
       "debt": 103.7,
       "stability": 53.6
      },
      {
       "year": 2040,
-      "gdp": 43107.8,
+      "gdp": 43119.4,
       "growth": 1.85,
       "debt": 103.3,
       "stability": 53.7
      },
      {
       "year": 2041,
-      "gdp": 43888.9,
+      "gdp": 43901.0,
       "growth": 1.81,
       "debt": 103.0,
       "stability": 53.7
      },
      {
       "year": 2042,
-      "gdp": 44669.2,
+      "gdp": 44681.7,
       "growth": 1.78,
       "debt": 102.7,
       "stability": 53.8
      },
      {
       "year": 2043,
-      "gdp": 45449.3,
+      "gdp": 45462.1,
       "growth": 1.75,
       "debt": 102.5,
       "stability": 53.9
      },
      {
       "year": 2044,
-      "gdp": 46229.9,
+      "gdp": 46243.1,
       "growth": 1.72,
-      "debt": 102.3,
+      "debt": 102.2,
       "stability": 53.9
      },
      {
       "year": 2045,
-      "gdp": 47011.5,
+      "gdp": 47025.1,
       "growth": 1.69,
-      "debt": 102.1,
-      "stability": 53.9
+      "debt": 102.0,
+      "stability": 54.0
      },
      {
       "year": 2046,
-      "gdp": 47794.9,
+      "gdp": 47808.7,
       "growth": 1.67,
       "debt": 101.9,
       "stability": 54.0
      },
      {
       "year": 2047,
-      "gdp": 48580.5,
+      "gdp": 48594.7,
       "growth": 1.64,
-      "debt": 101.8,
+      "debt": 101.7,
       "stability": 54.0
      },
      {
       "year": 2048,
-      "gdp": 49368.9,
+      "gdp": 49383.4,
       "growth": 1.62,
       "debt": 101.6,
-      "stability": 54.0
+      "stability": 54.1
      },
      {
       "year": 2049,
-      "gdp": 50160.8,
+      "gdp": 50175.6,
       "growth": 1.6,
       "debt": 101.5,
       "stability": 54.1
      },
      {
       "year": 2050,
-      "gdp": 50956.5,
+      "gdp": 50971.6,
       "growth": 1.59,
       "debt": 101.4,
       "stability": 54.1
@@ -2137,12 +2137,6 @@
     "source": "Google News RSS",
     "headlines": [
      {
-      "title": "Kolkata Stampede Leaves At Least 19 Dead, Dozens Injured",
-      "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNM1BUV29weENTN2tudGhkbzZsQWp5aThzYWxOcUFaUkJiNm5HZ09sNUdNX2JOYk9UZzQyRG41N3RKWnhfMnlzRE9nS0treFR0UC02WFdFaTBUelprb3lDb1UzNDkzS04xaldoUzBwR3A0MF9WX04wWUE0RE5pclRRSUN4a2t1U1prTFZKamNWOXdzRlhqVC1leDJOUHlJMkZCMm04eUd1NFYwZw?oc=5",
-      "source": "Bloomberg.com",
-      "compound": -0.87
-     },
-     {
       "title": "India's GDP per capita catching up with richer nations, growth worth celebrating: Korean economist",
       "url": "https://news.google.com/rss/articles/CBMi9gFBVV95cUxOZVBKMVNGT0N3TWN5MUQyWlRhN05vTGs2bXpuVTJNbFdxX2JLS2ZCUVkxN1QybTJIU1FYNmJqMkNCcHFYYzFKcUJFc0dqUHRKNEw1VHNqdDJNbTkyZnc3UXNwZUtrck9zQkV1LS1KWjdRWUZrVXByZThaN1F1VElYUkI2bkx4ZENUNTlLWmo2QTdjcDdFMVdZaVZzTFB3clliTFJpWVhYWldEdHBOTGxsNnNEcGQzVnNsZE05UnBZd21tdDhQSE5PMjNjM0Zsb2JqRzFMVGNoM0FiQ3QteVg5bXFJTWI3ZThMbUZVMlc1dHBLUWxMNWfSAfsBQVVfeXFMT3owXzAxREdqS0J4d2R3aEhCZHlJaGgyZzRhOW1JbmZRSnExTmlxMHk0YnR5TG5Ya3c5SE05ZFRoM0lEblB6bkJYTjY0a3VVSDRMa2Vva0tjN0xTaDFSRWxDMmNnUlJyYU9iN0FtaDBOb3NEVU1wMzRQSUltbEZ3dWVBRWlKdWRuVlN2ZTFfX2tqYUQ3VWtBTWxoREViN2ROUS1LTVhqcVN1aDE1X0NSbzBpbzJYbTJTVmdMMTh1N0dfNlBSNjdWbU5vbWFtdnNsNjY2d3FRV0pHR3hFcDVzQnhndHlYMV9aVnpHQ2FtU3NqZkhTeXFEQkZDRGc?oc=5",
       "source": "Business Today",
@@ -2171,6 +2165,12 @@
       "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxNQlBvT0QyVGpGWDMyOFJ2NWlSQ1B3MEllTkhkSU1oWlVTYjJZZXdKOTVlT2R4TlVrelhKeGRTR19FWklIbjVlWlJ3VzNaV1REamxrLWN5cS11bUxheU1UNDZBQ1ZsSzJ3LTh4NGRBdmoxOEQ1QUFWMTBaWTRqLTFLeFVDY3hTOFFhc1dTemU4WVhMWWNwMWNNMm1GMF8wci1NTDdPWkpYUG5rU3NNS1dvU2c1VmRXQ3FJWHVFMXNzYjVBS2ZQdDlxRFJGY1lIYmRRYnJrRFhFeWRPUdIB3wFBVV95cUxPVWI3Z0dyeW1aYnBzb3JWdzZ5bjFjQmtEeWpKZm04LU1YSFVla0JQWFFkeGJqbEstNXFiMUhJQkRWd0dsZEFfV2lCTTdHUVZ6djI1TnJicFlvMm0yakpvWHpMa093SEtmdndmdDNXVlJ4aDV0c1JMaDkxc25YMGZZZ3NBSlljMTZNOTctYThNWWVHYlNTUUtqV08xV3hoeHV4OFhqSGFCaEg3bXdNVmpsRFNPdV9Td05fUVR2QnBTOEhBRlZzUEYxXzd6WXlUQlJ5QnNYZmpjZ0lTTS10UUIw?oc=5",
       "source": "The Times of India",
       "compound": -0.73
+     },
+     {
+      "title": "India trade mission secures 600 jobs and £100m investment for Greater Manchester",
+      "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxPQWhKODBEdFJHRmJnVHB6SDRNNFA0dkdTZ3FMSmNOSEtFb1NEUTRrd1ROWVB2TjJYZUoxeVpaYUx1aGZQcFk3SUptZVQ1ejNDZEFOQS1qbElNREw2VURKa1FTZEo0X21MeDh5dnlLMUh4M1ZiS1VIZjhUamdCUDJFQjZjbWNoV1lfSElIUDJjWENmQmplWHQxemFUczVfcWlrdkxsMV9EaVFQV2hoaTlVR3EtMVR3T01PNFBJanVYYlllWmVDSFNnLTh1SzdBOVk?oc=5",
+      "source": "TheBusinessDesk.com",
+      "compound": 0.68
      }
     ],
     "as_of": "2026-10-18",
@@ -2530,7 +2530,7 @@
      },
      {
       "title": "Europe Protests: France and Italy Erupt in Violence as Inflation Anger Sparks Clashes and Arson",
-      "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxOcmxXazlNQkRYcmhIMEdMSlNkRV9kOEQ1Y2QxNmMwcHFnZWxIazh4MHRQdkVRRHFoYzlDRWs4akdSaWxEOTVRbC1SRGFVUkptMS1HMkQwYTRyRFdCWVYwX0dTZFRMZFRQNG9yS29QOUVVZGRPNTlZenRpVE5LeXpLMUtyaW10R1E0eTduY3RQc2t3VzhZaWc5YzJidXlRREVEOUhmbnlOeG5lb2dIZXNHNk9YOC1VNTc2b2tVZDFSdmlwTUFRTXEtYXBNSkFpYXh0YjVLeTQwLUs1WVc2UjNIVklqRdIB4wFBVV95cUxOcmxXazlNQkRYcmhIMEdMSlNkRV9kOEQ1Y2QxNmMwcHFnZWxIazh4MHRQdkVRRHFoYzlDRWs4akdSaWxEOTVRbC1SRGFVUkptMS1HMkQwYTRyRFdCWVYwX0dTZFRMZFRQNG9yS29QOUVVZGRPNTlZenRpVE5LeXpLMUtyaW10R1E0eTduY3RQc2t3VzhZaWc5YzJidXlRREVEOUhmbnlOeG5lb2dIZXNHNk9YOC1VNTc2b2tVZDFSdmlwTUFRTXEtYXBNSkFpYXh0YjVLeTQwLUs1WVc2UjNIVklqRQ?oc=5",
+      "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxOVlFFS2ZGbS1odWw5bUZnVk1kMkloN2gzVWl0Y0haOEVNZ29lTGNZRXEtMnVMd2ZqM3dfY0tUN1J6WWx5Q0ZxWTJheklaRTh6eTBNV3N2ZE8xOFc5YmxyWlJrZnVwN2VBNExpNDdKZnlON01id25pZWtQenBLaXgyTHJhZzNLUWlZQ2ZSUEJRZ1UwVmJRdGc0WWJyT0ZjTG1GVTRBclVhODc2amM5aFdiQWFzQk95bktJX1pkU2JxdnVmRnZFNGVQRUlzOWhQWmNPUkdmZmlHQTJEaTFWdXfSAeMBQVVfeXFMTnJsV2s5TUJEWHJoSDBHTEpTZEVfZDhENWNkMTZjMHBxZ2VsSGs4eDB0UHZFUURxaGM5Q0VrOGpHUmlsRDk1UWwtUkRhVVJKbTEtRzJEMGE0ckRXQllWMF9HU2RUTGRUUDRvcktvUDlFVWRkTzU5WXp0aVROS3l6SzFLcmltdEdRNHk3bmN0UHNrd1c4WWlnOWMyYnV5UURFRDlIZm55TnhuZW9nSGVzRzZPWDgtVTU3Nm9rVWQxUnZpcE1BUU1xLWFwTUpBaWF4dGI1S3k0MC1LNVlXNlIzSFZJakU?oc=5",
       "source": "ABP Live English",
       "compound": -0.87
      },
@@ -2851,19 +2851,19 @@
     }
    },
    "confidence": {
-    "score": 48.7,
+    "score": 49.3,
     "label": "Neutre",
     "components": {
      "macro": 37.6,
      "fiscal": 81.1,
-     "sentiment": 31.0
+     "sentiment": 33.0
     },
     "subscores": {
      "growth": 41.7,
      "inflation": 32.6,
      "debt": 94.7,
      "current_account": 60.6,
-     "sentiment": 31.0
+     "sentiment": 33.0
     },
     "factors": [
      {
@@ -2897,15 +2897,15 @@
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 31.0,
-      "impact": -5.7,
-      "detail": "VADER moyen -0.19"
+      "subscore": 33.0,
+      "impact": -5.1,
+      "detail": "VADER moyen -0.17"
      }
     ]
    },
    "sentiment": {
-    "compound": -0.19,
-    "n_articles": 38,
+    "compound": -0.17,
+    "n_articles": 37,
     "source": "Google News RSS",
     "headlines": [
      {
@@ -2927,12 +2927,6 @@
       "compound": -0.62
      },
      {
-      "title": "Putin Hands Control of 5 Western Firms to Ukraine War Veteran",
-      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNM1lWNlBZc0pZanhDNGhiYnVKbzhZWUNpU2RqV3NVTXpWaWNieGNoVTRNU09ldHpkUnJtWVFqakpDSzFIbE1SU29GazZXNl9tS0RYQTN5b3lPZTZxUl82czhBMkFpQUZ2MFh2NmlrcUlkSXhJNl8tajd6YVlRVTVfLURNWFg1MWY5Q1Q4YTlVUEVhR1dvVFp1N2hMVi1XY2dDX3EwTmNTdmpHQTUyVXRB?oc=5",
-      "source": "The Moscow Times",
-      "compound": -0.6
-     },
-     {
       "title": "Europe needs a ‘unified voice’ to defeat Russia, analyst warns",
       "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxORDduNmU4Uld5al9lcjFOcmY0MWk0cjJZOGttOXAyRzlBOVlWWDQxazZfWjFXUVBqTUI0aWsyR21CT2g3SFU0Zjd3RkRqUXZIYzhRUXdiQXhzb0kyclVCX3R1Vk1hVVVfdG4xTHI3WC1POTBmbkZwZzhLY2ZCSVdocG9keHIweUdobXpn?oc=5",
       "source": "TVP World",
@@ -2943,15 +2937,21 @@
       "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNSGpmclBVMVFJS3JqNlRYMXdiX0JOXzlvRFc3WDFuNU1HYW5WQzhhaV80ZXFOR2FkdTVXTFFjd0tsUTB2NFBWZ0JwUU1ET2Q0WHQ5VlR4MElpdTNYWjNHY0JsNG9pcVE2RWxVdEFVbWRqd19ic3A1VWFDdk93TmliN1ZnTHFZVS10Y1JHSVdjWEctWkh5OHc4Y1pBMkVRbHZ0WF9BUzlJTHhJelNCUFN6ZTN2NnpYZFFyM05yM3dRUzVCLVVwNjNxNDV2WHI?oc=5",
       "source": "New York Post",
       "compound": -0.49
+     },
+     {
+      "title": "Trump's Russia diesel deal may offer Putin more than money — and spell trouble for Ukraine",
+      "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTE4yUlZma192R0hueHd1UmlZMXFPTTNxeGdGeGNNX244YjZoY3VQWHB0WUhRYkZWNFRiWlZDaGhjS0Z5Zlo2YWlxTkp4WG1NazdXZjBLeG1xc0FURWh2SVR2Y1FxMmFDNHJ5ekJibEtrQmU3bzFMVmtr0gF8QVVfeXFMTnJaMmpuYXdDUk5RbkNpaXdRRF91VjhDMW1Hd3paRUs2c2FfeEcxYmhtQXN0ZG1INHN5Qm1yZGwybTRnV1dBaEUzaU1rTFZEU0trZkR2eW0yQkpZY3dXRVduU0pXVnN6UGx3Y202VVNnRDdxWWZ1c09VQTB1dQ?oc=5",
+      "source": "CNBC",
+      "compound": -0.4
      }
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 31.0,
+    "score": 33.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 31.0
+      "score": 33.0
      }
     ]
    },
@@ -2968,9 +2968,9 @@
     },
     "cagr_10": 2.27,
     "cagr_25": 1.84,
-    "gdp_10": 3206.1,
-    "gdp_25": 4042.6,
-    "stability_10": 62.6,
+    "gdp_10": 3206.9,
+    "gdp_25": 4043.8,
+    "stability_10": 62.7,
     "stability_25": 64.2,
     "debt_10": 16.5,
     "debt_25": 16.4,
@@ -2980,179 +2980,179 @@
       "gdp": 2561.3,
       "growth": 1.0,
       "debt": 17.9,
-      "stability": 48.7
+      "stability": 49.3
      },
      {
       "year": 2026,
-      "gdp": 2631.4,
+      "gdp": 2631.5,
       "growth": 2.74,
       "debt": 17.6,
-      "stability": 53.7
+      "stability": 54.2
      },
      {
       "year": 2027,
-      "gdp": 2700.0,
+      "gdp": 2700.3,
       "growth": 2.61,
       "debt": 17.4,
-      "stability": 55.6
+      "stability": 55.9
      },
      {
       "year": 2028,
-      "gdp": 2767.4,
-      "growth": 2.49,
+      "gdp": 2767.6,
+      "growth": 2.5,
       "debt": 17.3,
-      "stability": 57.1
+      "stability": 57.4
      },
      {
       "year": 2029,
-      "gdp": 2833.4,
+      "gdp": 2833.7,
       "growth": 2.39,
       "debt": 17.1,
-      "stability": 58.4
+      "stability": 58.6
      },
      {
       "year": 2030,
-      "gdp": 2898.1,
+      "gdp": 2898.6,
       "growth": 2.29,
       "debt": 17.0,
-      "stability": 59.5
+      "stability": 59.6
      },
      {
       "year": 2031,
-      "gdp": 2961.8,
+      "gdp": 2962.3,
       "growth": 2.2,
       "debt": 16.9,
-      "stability": 60.3
+      "stability": 60.4
      },
      {
       "year": 2032,
-      "gdp": 3024.3,
+      "gdp": 3024.9,
       "growth": 2.11,
       "debt": 16.8,
       "stability": 61.1
      },
      {
       "year": 2033,
-      "gdp": 3085.8,
-      "growth": 2.03,
+      "gdp": 3086.5,
+      "growth": 2.04,
       "debt": 16.7,
       "stability": 61.7
      },
      {
       "year": 2034,
-      "gdp": 3146.4,
+      "gdp": 3147.1,
       "growth": 1.96,
       "debt": 16.6,
       "stability": 62.2
      },
      {
       "year": 2035,
-      "gdp": 3206.1,
+      "gdp": 3206.9,
       "growth": 1.9,
       "debt": 16.5,
-      "stability": 62.6
+      "stability": 62.7
      },
      {
       "year": 2036,
-      "gdp": 3265.1,
+      "gdp": 3265.9,
       "growth": 1.84,
       "debt": 16.5,
       "stability": 63.0
      },
      {
       "year": 2037,
-      "gdp": 3323.3,
+      "gdp": 3324.1,
       "growth": 1.78,
       "debt": 16.4,
       "stability": 63.3
      },
      {
       "year": 2038,
-      "gdp": 3380.8,
+      "gdp": 3381.7,
       "growth": 1.73,
       "debt": 16.4,
       "stability": 63.5
      },
      {
       "year": 2039,
-      "gdp": 3437.8,
+      "gdp": 3438.7,
       "growth": 1.69,
       "debt": 16.4,
       "stability": 63.7
      },
      {
       "year": 2040,
-      "gdp": 3494.3,
+      "gdp": 3495.2,
       "growth": 1.64,
       "debt": 16.4,
       "stability": 63.9
      },
      {
       "year": 2041,
-      "gdp": 3550.2,
+      "gdp": 3551.2,
       "growth": 1.6,
       "debt": 16.3,
       "stability": 64.0
      },
      {
       "year": 2042,
-      "gdp": 3605.8,
+      "gdp": 3606.8,
       "growth": 1.57,
       "debt": 16.3,
       "stability": 64.1
      },
      {
       "year": 2043,
-      "gdp": 3661.1,
+      "gdp": 3662.1,
       "growth": 1.53,
       "debt": 16.3,
       "stability": 64.1
      },
      {
       "year": 2044,
-      "gdp": 3716.0,
+      "gdp": 3717.1,
       "growth": 1.5,
       "debt": 16.3,
       "stability": 64.2
      },
      {
       "year": 2045,
-      "gdp": 3770.8,
+      "gdp": 3771.9,
       "growth": 1.47,
       "debt": 16.3,
       "stability": 64.2
      },
      {
       "year": 2046,
-      "gdp": 3825.3,
+      "gdp": 3826.4,
       "growth": 1.45,
       "debt": 16.3,
       "stability": 64.2
      },
      {
       "year": 2047,
-      "gdp": 3879.7,
+      "gdp": 3880.9,
       "growth": 1.42,
-      "debt": 16.4,
-      "stability": 64.2
+      "debt": 16.3,
+      "stability": 64.3
      },
      {
       "year": 2048,
-      "gdp": 3934.1,
+      "gdp": 3935.2,
       "growth": 1.4,
       "debt": 16.4,
       "stability": 64.3
      },
      {
       "year": 2049,
-      "gdp": 3988.3,
+      "gdp": 3989.5,
       "growth": 1.38,
       "debt": 16.4,
       "stability": 64.3
      },
      {
       "year": 2050,
-      "gdp": 4042.6,
+      "gdp": 4043.8,
       "growth": 1.36,
       "debt": 16.4,
       "stability": 64.2
@@ -4473,16 +4473,16 @@
       "compound": -0.67
      },
      {
-      "title": "Spain, official partner country in the great international tourism forum of China",
-      "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOQ0wyLU14TnlvaDdwRFNOWV9HNnVqU2toMFgwLTdCR01Na3d0SVpqVUZ1QzdjcHNKZkpZMklaVzRkYTA5X2I0aVhVamZfNk9DTGpTb1IwNnJLRHozNllJVVNCSTVGS0V5LWk2VVRYRXdCcXpPUzZjb2ZkTHVBNTlPZ3FBSnFDVGJXaE9fWTEyNFBMOUdCdEF4WVhkbHNFcFVJbVhuLUFhaGhWRWF0c1JRZ3EtVGtlZXRr0gG-AUFVX3lxTE1XOEdoOUN5N0xPY0dodG0ycVE4aWl3TC16T0Z1cDNWVlNqVFEtUGNxVmJGSlJxU2hESzh0d2w5VTBER1ROVUREWE52V1JNNkZHaUxJMUptTWY2MHhYMGZCVEhQR0thSjBndXFLcGRDWlpJY0U4aVhsaGlvVHhyYXBrZXNSQkZUN202M1FORWxyMzJlTzVoeVFmVXdpclJ4X29XcjlKUlBZb19WMkM1NC1ZcURYWWJ3LVJ5X0hXZ3c?oc=5",
-      "source": "Demócrata",
-      "compound": 0.62
-     },
-     {
       "title": "Spain’s hard left fails to unite before election, hurting chances of staying in power",
       "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOQnNlZi1EakRZNTBvam5NLTVsZXZpb1pRNXdLc2ZjT3lzXzI1cWlub3BtSWNiZFRFUGJkVHhpS0F5enNrc3J2ZTdUanVRUUkzdTlOUGJsMzNwQUJqZmdUeWt3dTlzcHNwV2xQVXJkNFVyT0tBMVQ0MjVQbXM5OW1WMl9ScFFZYWM3cEF5NmdscF95dlAyZXJXS2ZOTjZfWURMTTF2eXBOQ2tBV0EyZWEtZmxEMWJSX1lHcFHSAb8BQVVfeXFMT016TW1TVzh0WThnbE1IUnZ5MWZ4dVpmNy1lOUROZnRISXBDYjNpZ0xWY01tZ2drVmpzTnhqMUd5bHJoUjhzampkZDd0S2lrN1FwRVVJQTh2cmYwTkdWVEtrdTdwRk9UaWI3QUYtQkwzVEN4V1RpQWRqZ0pWcW5CMk1iOU5QYndPUW02VGlPeUQxQUN1dmtSYzEzazVNNkxMMFROY01mV3lPZ2UwbGJ1YUhmOV8zTWxNdWZGUFdsWFk?oc=5",
       "source": "ThePrint",
       "compound": -0.62
+     },
+     {
+      "title": "Spain, official partner country in the great international tourism forum of China",
+      "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOQ0wyLU14TnlvaDdwRFNOWV9HNnVqU2toMFgwLTdCR01Na3d0SVpqVUZ1QzdjcHNKZkpZMklaVzRkYTA5X2I0aVhVamZfNk9DTGpTb1IwNnJLRHozNllJVVNCSTVGS0V5LWk2VVRYRXdCcXpPUzZjb2ZkTHVBNTlPZ3FBSnFDVGJXaE9fWTEyNFBMOUdCdEF4WVhkbHNFcFVJbVhuLUFhaGhWRWF0c1JRZ3EtVGtlZXRr0gG-AUFVX3lxTE1XOEdoOUN5N0xPY0dodG0ycVE4aWl3TC16T0Z1cDNWVlNqVFEtUGNxVmJGSlJxU2hESzh0d2w5VTBER1ROVUREWE52V1JNNkZHaUxJMUptTWY2MHhYMGZCVEhQR0thSjBndXFLcGRDWlpJY0U4aVhsaGlvVHhyYXBrZXNSQkZUN202M1FORWxyMzJlTzVoeVFmVXdpclJ4X29XcjlKUlBZb19WMkM1NC1ZcURYWWJ3LVJ5X0hXZ3c?oc=5",
+      "source": "Demócrata",
+      "compound": 0.62
      },
      {
       "title": "Spain handed stadium ban over fans’ anti-Muslim chants",
@@ -5556,19 +5556,19 @@
     }
    },
    "confidence": {
-    "score": 55.0,
+    "score": 55.3,
     "label": "Neutre",
     "components": {
      "macro": 62.2,
      "fiscal": 59.3,
-     "sentiment": 41.0
+     "sentiment": 42.0
     },
     "subscores": {
      "growth": 42.4,
      "inflation": 86.4,
      "debt": 78.3,
      "current_account": 30.6,
-     "sentiment": 41.0
+     "sentiment": 42.0
     },
     "factors": [
      {
@@ -5602,14 +5602,14 @@
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 41.0,
-      "impact": -2.7,
-      "detail": "VADER moyen -0.09"
+      "subscore": 42.0,
+      "impact": -2.4,
+      "detail": "VADER moyen -0.08"
      }
     ]
    },
    "sentiment": {
-    "compound": -0.09,
+    "compound": -0.08,
     "n_articles": 37,
     "source": "Google News RSS",
     "headlines": [
@@ -5652,11 +5652,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 41.0,
+    "score": 42.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 41.0
+      "score": 42.0
      }
     ]
    },
@@ -5671,10 +5671,10 @@
      "confidence_adjustment": 0.04,
      "real_interest_rate": 1.5
     },
-    "cagr_10": 2.42,
+    "cagr_10": 2.43,
     "cagr_25": 2.34,
-    "gdp_10": 2285.3,
-    "gdp_25": 3204.6,
+    "gdp_10": 2285.6,
+    "gdp_25": 3205.0,
     "stability_10": 62.5,
     "stability_25": 64.1,
     "debt_10": 52.9,
@@ -5685,179 +5685,179 @@
       "gdp": 1798.5,
       "growth": 1.35,
       "debt": 57.9,
-      "stability": 55.0
+      "stability": 55.3
      },
      {
       "year": 2026,
       "gdp": 1843.9,
-      "growth": 2.52,
+      "growth": 2.53,
       "debt": 57.3,
-      "stability": 58.0
+      "stability": 58.2
      },
      {
       "year": 2027,
-      "gdp": 1889.9,
+      "gdp": 1890.0,
       "growth": 2.5,
       "debt": 56.7,
-      "stability": 59.0
+      "stability": 59.2
      },
      {
       "year": 2028,
-      "gdp": 1936.6,
+      "gdp": 1936.7,
       "growth": 2.47,
       "debt": 56.2,
-      "stability": 59.8
+      "stability": 59.9
      },
      {
       "year": 2029,
-      "gdp": 1984.0,
+      "gdp": 1984.1,
       "growth": 2.45,
       "debt": 55.7,
-      "stability": 60.4
+      "stability": 60.5
      },
      {
       "year": 2030,
-      "gdp": 2032.2,
+      "gdp": 2032.3,
       "growth": 2.43,
       "debt": 55.2,
       "stability": 61.0
      },
      {
       "year": 2031,
-      "gdp": 2081.1,
+      "gdp": 2081.3,
       "growth": 2.41,
       "debt": 54.7,
       "stability": 61.4
      },
      {
       "year": 2032,
-      "gdp": 2130.8,
+      "gdp": 2131.0,
       "growth": 2.39,
       "debt": 54.2,
-      "stability": 61.7
+      "stability": 61.8
      },
      {
       "year": 2033,
-      "gdp": 2181.4,
-      "growth": 2.37,
+      "gdp": 2181.7,
+      "growth": 2.38,
       "debt": 53.8,
-      "stability": 62.0
+      "stability": 62.1
      },
      {
       "year": 2034,
-      "gdp": 2232.9,
+      "gdp": 2233.2,
       "growth": 2.36,
       "debt": 53.3,
       "stability": 62.3
      },
      {
       "year": 2035,
-      "gdp": 2285.3,
+      "gdp": 2285.6,
       "growth": 2.35,
       "debt": 52.9,
       "stability": 62.5
      },
      {
       "year": 2036,
-      "gdp": 2338.7,
-      "growth": 2.33,
+      "gdp": 2338.9,
+      "growth": 2.34,
       "debt": 52.4,
       "stability": 62.7
      },
      {
       "year": 2037,
-      "gdp": 2393.0,
+      "gdp": 2393.3,
       "growth": 2.32,
       "debt": 52.0,
       "stability": 62.9
      },
      {
       "year": 2038,
-      "gdp": 2448.4,
+      "gdp": 2448.7,
       "growth": 2.31,
       "debt": 51.6,
-      "stability": 63.0
+      "stability": 63.1
      },
      {
       "year": 2039,
-      "gdp": 2504.8,
+      "gdp": 2505.1,
       "growth": 2.3,
       "debt": 51.2,
       "stability": 63.2
      },
      {
       "year": 2040,
-      "gdp": 2562.3,
+      "gdp": 2562.6,
       "growth": 2.3,
       "debt": 50.8,
       "stability": 63.3
      },
      {
       "year": 2041,
-      "gdp": 2620.9,
+      "gdp": 2621.3,
       "growth": 2.29,
       "debt": 50.4,
       "stability": 63.4
      },
      {
       "year": 2042,
-      "gdp": 2680.7,
+      "gdp": 2681.0,
       "growth": 2.28,
       "debt": 50.0,
       "stability": 63.5
      },
      {
       "year": 2043,
-      "gdp": 2741.6,
+      "gdp": 2742.0,
       "growth": 2.27,
       "debt": 49.6,
       "stability": 63.6
      },
      {
       "year": 2044,
-      "gdp": 2803.8,
+      "gdp": 2804.2,
       "growth": 2.27,
       "debt": 49.3,
       "stability": 63.7
      },
      {
       "year": 2045,
-      "gdp": 2867.3,
+      "gdp": 2867.7,
       "growth": 2.26,
       "debt": 48.9,
       "stability": 63.8
      },
      {
       "year": 2046,
-      "gdp": 2932.0,
+      "gdp": 2932.4,
       "growth": 2.26,
       "debt": 48.5,
       "stability": 63.9
      },
      {
       "year": 2047,
-      "gdp": 2998.1,
+      "gdp": 2998.5,
       "growth": 2.25,
       "debt": 48.2,
       "stability": 63.9
      },
      {
       "year": 2048,
-      "gdp": 3065.5,
+      "gdp": 3065.9,
       "growth": 2.25,
       "debt": 47.8,
       "stability": 64.0
      },
      {
       "year": 2049,
-      "gdp": 3134.3,
+      "gdp": 3134.8,
       "growth": 2.25,
       "debt": 47.5,
       "stability": 64.1
      },
      {
       "year": 2050,
-      "gdp": 3204.6,
+      "gdp": 3205.0,
       "growth": 2.24,
       "debt": 47.1,
       "stability": 64.1
@@ -7106,19 +7106,19 @@
     }
    },
    "confidence": {
-    "score": 65.3,
+    "score": 65.6,
     "label": "Optimiste",
     "components": {
      "macro": 86.3,
      "fiscal": 68.5,
-     "sentiment": 34.0
+     "sentiment": 35.0
     },
     "subscores": {
      "growth": 75.5,
      "inflation": 99.4,
      "debt": 92.8,
      "current_account": 32.1,
-     "sentiment": 34.0
+     "sentiment": 35.0
     },
     "factors": [
      {
@@ -7152,14 +7152,14 @@
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 34.0,
-      "impact": -4.8,
-      "detail": "VADER moyen -0.16"
+      "subscore": 35.0,
+      "impact": -4.5,
+      "detail": "VADER moyen -0.15"
      }
     ]
    },
    "sentiment": {
-    "compound": -0.16,
+    "compound": -0.15,
     "n_articles": 40,
     "source": "Google News RSS",
     "headlines": [
@@ -7202,11 +7202,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 34.0,
+    "score": 35.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 34.0
+      "score": 35.0
      }
     ]
    },
@@ -7223,8 +7223,8 @@
     },
     "cagr_10": 4.94,
     "cagr_25": 4.94,
-    "gdp_10": 2068.5,
-    "gdp_25": 4262.1,
+    "gdp_10": 2068.7,
+    "gdp_25": 4262.7,
     "stability_10": 71.7,
     "stability_25": 72.8,
     "debt_10": 18.6,
@@ -7235,179 +7235,179 @@
       "gdp": 1276.9,
       "growth": 4.5,
       "debt": 26.0,
-      "stability": 65.3
+      "stability": 65.6
      },
      {
       "year": 2026,
-      "gdp": 1340.2,
+      "gdp": 1340.3,
       "growth": 4.96,
       "debt": 25.1,
-      "stability": 67.2
+      "stability": 67.4
      },
      {
       "year": 2027,
-      "gdp": 1406.6,
+      "gdp": 1406.7,
       "growth": 4.95,
       "debt": 24.3,
-      "stability": 68.4
+      "stability": 68.5
      },
      {
       "year": 2028,
-      "gdp": 1476.2,
+      "gdp": 1476.3,
       "growth": 4.95,
       "debt": 23.5,
-      "stability": 69.2
+      "stability": 69.3
      },
      {
       "year": 2029,
-      "gdp": 1549.2,
+      "gdp": 1549.3,
       "growth": 4.94,
       "debt": 22.7,
       "stability": 69.9
      },
      {
       "year": 2030,
-      "gdp": 1625.7,
+      "gdp": 1625.8,
       "growth": 4.94,
       "debt": 22.0,
       "stability": 70.4
      },
      {
       "year": 2031,
-      "gdp": 1706.0,
+      "gdp": 1706.1,
       "growth": 4.94,
       "debt": 21.3,
-      "stability": 70.7
+      "stability": 70.8
      },
      {
       "year": 2032,
-      "gdp": 1790.2,
+      "gdp": 1790.3,
       "growth": 4.94,
       "debt": 20.6,
       "stability": 71.1
      },
      {
       "year": 2033,
-      "gdp": 1878.5,
+      "gdp": 1878.7,
       "growth": 4.94,
       "debt": 19.9,
       "stability": 71.3
      },
      {
       "year": 2034,
-      "gdp": 1971.2,
-      "growth": 4.93,
+      "gdp": 1971.4,
+      "growth": 4.94,
       "debt": 19.3,
       "stability": 71.5
      },
      {
       "year": 2035,
-      "gdp": 2068.5,
+      "gdp": 2068.7,
       "growth": 4.93,
       "debt": 18.6,
       "stability": 71.7
      },
      {
       "year": 2036,
-      "gdp": 2170.5,
+      "gdp": 2170.8,
       "growth": 4.93,
       "debt": 18.0,
       "stability": 71.8
      },
      {
       "year": 2037,
-      "gdp": 2277.6,
+      "gdp": 2277.9,
       "growth": 4.93,
       "debt": 17.4,
-      "stability": 71.9
+      "stability": 72.0
      },
      {
       "year": 2038,
-      "gdp": 2390.0,
+      "gdp": 2390.3,
       "growth": 4.93,
       "debt": 16.9,
       "stability": 72.1
      },
      {
       "year": 2039,
-      "gdp": 2508.0,
-      "growth": 4.93,
+      "gdp": 2508.3,
+      "growth": 4.94,
       "debt": 16.3,
       "stability": 72.2
      },
      {
       "year": 2040,
-      "gdp": 2631.8,
+      "gdp": 2632.1,
       "growth": 4.94,
       "debt": 15.8,
       "stability": 72.2
      },
      {
       "year": 2041,
-      "gdp": 2761.7,
+      "gdp": 2762.0,
       "growth": 4.94,
       "debt": 15.3,
       "stability": 72.3
      },
      {
       "year": 2042,
-      "gdp": 2898.0,
+      "gdp": 2898.4,
       "growth": 4.94,
       "debt": 14.8,
       "stability": 72.4
      },
      {
       "year": 2043,
-      "gdp": 3041.1,
+      "gdp": 3041.5,
       "growth": 4.94,
       "debt": 14.3,
       "stability": 72.5
      },
      {
       "year": 2044,
-      "gdp": 3191.2,
+      "gdp": 3191.7,
       "growth": 4.94,
       "debt": 13.8,
       "stability": 72.5
      },
      {
       "year": 2045,
-      "gdp": 3348.9,
+      "gdp": 3349.3,
       "growth": 4.94,
       "debt": 13.4,
       "stability": 72.6
      },
      {
       "year": 2046,
-      "gdp": 3514.3,
+      "gdp": 3514.8,
       "growth": 4.94,
       "debt": 12.9,
       "stability": 72.6
      },
      {
       "year": 2047,
-      "gdp": 3687.9,
+      "gdp": 3688.4,
       "growth": 4.94,
       "debt": 12.5,
       "stability": 72.7
      },
      {
       "year": 2048,
-      "gdp": 3870.1,
+      "gdp": 3870.7,
       "growth": 4.94,
       "debt": 12.1,
       "stability": 72.7
      },
      {
       "year": 2049,
-      "gdp": 4061.4,
+      "gdp": 4061.9,
       "growth": 4.94,
       "debt": 11.7,
       "stability": 72.8
      },
      {
       "year": 2050,
-      "gdp": 4262.1,
+      "gdp": 4262.7,
       "growth": 4.94,
       "debt": 11.3,
       "stability": 72.8
@@ -8265,19 +8265,19 @@
     }
    },
    "confidence": {
-    "score": 77.5,
+    "score": 77.8,
     "label": "Optimiste",
     "components": {
      "macro": 81.5,
      "fiscal": 95.5,
-     "sentiment": 54.0
+     "sentiment": 55.0
     },
     "subscores": {
      "growth": 69.1,
      "inflation": 96.7,
      "debt": 92.6,
      "current_account": 100.0,
-     "sentiment": 54.0
+     "sentiment": 55.0
     },
     "factors": [
      {
@@ -8311,14 +8311,14 @@
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 54.0,
-      "impact": 1.2,
-      "detail": "VADER moyen +0.04"
+      "subscore": 55.0,
+      "impact": 1.5,
+      "detail": "VADER moyen +0.05"
      }
     ]
    },
    "sentiment": {
-    "compound": 0.04,
+    "compound": 0.05,
     "n_articles": 34,
     "source": "Google News RSS",
     "headlines": [
@@ -8361,11 +8361,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 54.0,
+    "score": 55.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 54.0
+      "score": 55.0
      }
     ]
    },
@@ -8380,11 +8380,11 @@
      "confidence_adjustment": 0.22,
      "real_interest_rate": 1.5
     },
-    "cagr_10": 2.94,
+    "cagr_10": 2.95,
     "cagr_25": 2.32,
-    "gdp_10": 1010.5,
-    "gdp_25": 1341.6,
-    "stability_10": 72.4,
+    "gdp_10": 1010.7,
+    "gdp_25": 1341.8,
+    "stability_10": 72.5,
     "stability_25": 66.9,
     "debt_10": 23.4,
     "debt_25": 22.1,
@@ -8394,179 +8394,179 @@
       "gdp": 756.0,
       "growth": 4.6,
       "debt": 27.0,
-      "stability": 77.5
+      "stability": 77.8
      },
      {
       "year": 2025,
       "gdp": 783.6,
       "growth": 3.65,
       "debt": 26.4,
-      "stability": 75.8
+      "stability": 76.1
      },
      {
       "year": 2026,
-      "gdp": 810.6,
+      "gdp": 810.7,
       "growth": 3.45,
       "debt": 25.9,
-      "stability": 75.2
+      "stability": 75.4
      },
      {
       "year": 2027,
       "gdp": 837.2,
-      "growth": 3.27,
+      "growth": 3.28,
       "debt": 25.5,
-      "stability": 74.7
+      "stability": 74.8
      },
      {
       "year": 2028,
-      "gdp": 863.2,
+      "gdp": 863.3,
       "growth": 3.11,
       "debt": 25.1,
       "stability": 74.3
      },
      {
       "year": 2029,
-      "gdp": 888.8,
-      "growth": 2.96,
+      "gdp": 888.9,
+      "growth": 2.97,
       "debt": 24.7,
       "stability": 73.9
      },
      {
       "year": 2030,
-      "gdp": 913.9,
+      "gdp": 914.0,
       "growth": 2.83,
       "debt": 24.4,
-      "stability": 73.5
+      "stability": 73.6
      },
      {
       "year": 2031,
-      "gdp": 938.7,
-      "growth": 2.7,
+      "gdp": 938.8,
+      "growth": 2.71,
       "debt": 24.1,
-      "stability": 73.2
+      "stability": 73.3
      },
      {
       "year": 2032,
-      "gdp": 963.0,
+      "gdp": 963.1,
       "growth": 2.59,
       "debt": 23.9,
       "stability": 73.0
      },
      {
       "year": 2033,
-      "gdp": 986.9,
+      "gdp": 987.0,
       "growth": 2.49,
       "debt": 23.6,
       "stability": 72.7
      },
      {
       "year": 2034,
-      "gdp": 1010.5,
+      "gdp": 1010.7,
       "growth": 2.39,
       "debt": 23.4,
-      "stability": 72.4
+      "stability": 72.5
      },
      {
       "year": 2035,
-      "gdp": 1033.8,
+      "gdp": 1034.0,
       "growth": 2.31,
       "debt": 23.3,
       "stability": 71.9
      },
      {
       "year": 2036,
-      "gdp": 1056.9,
+      "gdp": 1057.0,
       "growth": 2.23,
       "debt": 23.1,
       "stability": 71.3
      },
      {
       "year": 2037,
-      "gdp": 1079.6,
+      "gdp": 1079.7,
       "growth": 2.15,
       "debt": 22.9,
       "stability": 70.8
      },
      {
       "year": 2038,
-      "gdp": 1102.1,
+      "gdp": 1102.3,
       "growth": 2.09,
       "debt": 22.8,
       "stability": 70.4
      },
      {
       "year": 2039,
-      "gdp": 1124.4,
-      "growth": 2.02,
+      "gdp": 1124.6,
+      "growth": 2.03,
       "debt": 22.7,
       "stability": 69.9
      },
      {
       "year": 2040,
-      "gdp": 1146.6,
+      "gdp": 1146.7,
       "growth": 1.97,
       "debt": 22.6,
       "stability": 69.5
      },
      {
       "year": 2041,
-      "gdp": 1168.6,
+      "gdp": 1168.7,
       "growth": 1.92,
       "debt": 22.5,
       "stability": 69.1
      },
      {
       "year": 2042,
-      "gdp": 1190.4,
+      "gdp": 1190.6,
       "growth": 1.87,
       "debt": 22.4,
       "stability": 68.8
      },
      {
       "year": 2043,
-      "gdp": 1212.2,
+      "gdp": 1212.3,
       "growth": 1.83,
       "debt": 22.3,
       "stability": 68.5
      },
      {
       "year": 2044,
-      "gdp": 1233.8,
+      "gdp": 1234.0,
       "growth": 1.79,
       "debt": 22.3,
       "stability": 68.2
      },
      {
       "year": 2045,
-      "gdp": 1255.4,
+      "gdp": 1255.6,
       "growth": 1.75,
       "debt": 22.2,
       "stability": 67.9
      },
      {
       "year": 2046,
-      "gdp": 1277.0,
+      "gdp": 1277.2,
       "growth": 1.72,
       "debt": 22.2,
       "stability": 67.6
      },
      {
       "year": 2047,
-      "gdp": 1298.5,
+      "gdp": 1298.7,
       "growth": 1.69,
       "debt": 22.1,
       "stability": 67.4
      },
      {
       "year": 2048,
-      "gdp": 1320.0,
+      "gdp": 1320.2,
       "growth": 1.66,
       "debt": 22.1,
       "stability": 67.2
      },
      {
       "year": 2049,
-      "gdp": 1341.6,
+      "gdp": 1341.8,
       "growth": 1.63,
       "debt": 22.1,
       "stability": 66.9
@@ -8651,19 +8651,19 @@
     }
    },
    "confidence": {
-    "score": 48.6,
+    "score": 48.3,
     "label": "Neutre",
     "components": {
      "macro": 64.3,
      "fiscal": 41.4,
-     "sentiment": 35.0
+     "sentiment": 34.0
     },
     "subscores": {
      "growth": 41.2,
      "inflation": 92.5,
      "debt": 36.4,
      "current_account": 48.9,
-     "sentiment": 35.0
+     "sentiment": 34.0
     },
     "factors": [
      {
@@ -8697,17 +8697,23 @@
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 35.0,
-      "impact": -4.5,
-      "detail": "VADER moyen -0.15"
+      "subscore": 34.0,
+      "impact": -4.8,
+      "detail": "VADER moyen -0.16"
      }
     ]
    },
    "sentiment": {
-    "compound": -0.15,
-    "n_articles": 38,
+    "compound": -0.16,
+    "n_articles": 37,
     "source": "Google News RSS",
     "headlines": [
+     {
+      "title": "Season of anger? France was just the beginning as Italy, Portugal, US and more now erupt in protests and violence - Why is world burning?",
+      "url": "https://news.google.com/rss/articles/CBMigwJBVV95cUxPelNXR0s3UXdXUmxaODljcW14YzRqMFY2ejNON1ZhM1R5dy12WmtCNEgxNjZ0VDFDbHk1UG1lLUkyaFBWNElNc3lBOExUM1d2TFk3NU5Dc1MwRWdOWDhWc2ZYcmVDbUdTTy1ZakE5RlFBa3pFWjh3WWptS3NjSF9sUm9xdWxpRzYybjRNR0IwRnhrMkt3aWdBTDJobnlkanBteGhHMWdldUxFYklpWV9HRkNKX3pXMVFVbkw3U1pTaUltVjVzUVRZMGtVUnBRWHFCX21ZZk83ZzhleXp6UVRSYk41ZVVMZ0gxbkQ2eTRMX2o1OFllb3VMbjFGUk1kNkltZnp30gGDAkFVX3lxTE96U1dHSzdRd1dSbFo4OWNxbXhjNGowVjZ6M043VmEzVHl3LXZaa0I0SDE2NnRUMUNseTVQbWUtSTJoUFY0SU1zeUE4TFQzV3ZMWTc1TkNzUzBFZ05YOFZzZlhyZUNtR1NPLVlqQTlGUUFrekVaOHdZam1Lc2NIX2xSb3F1bGlHNjJuNE1HQjBGeGsyS3dpZ0FMMmhueWRqcG14aEcxZ2V1TEViSWlZX0dGQ0pfelcxUVVuTDdTWlNpSW1WNXNRVFkwa1VScFFYcUJfbVlmTzdnOGV5enpRVFJiTjVlVUxnSDFuRDZ5NExfajU4WWVvdUxuMUZSTWQ2SW1menc?oc=5",
+      "source": "News24Online",
+      "compound": -0.88
+     },
      {
       "title": "Belgium Condemns Israeli Settler Assault on European Diplomatic Convoy in West Bank - Fana News -",
       "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxOb1R1V3RQNWY0SG1mbzNDUVZ6X3JMYnNsV1JFZVNFNXpWMDhYaXZUOWlpeURJbDlmVnBhcTM4aDliVzFCRXhmYU1aSGlpRGc1SXdncko3cTJGM01Xa2pIc1RuQ3pMckJwN2RONzBLb3hMdGlmZGJ3aXFsdWV6M3NPNk12ellXYXJoVVlxVW1EVnRwaUZpSmZJbEpabWQyTlNjSVE3YTgyV2pyc0h4amxOT0Zoek8zelkwY2tIUmJn?oc=5",
@@ -8727,12 +8733,6 @@
       "compound": 0.79
      },
      {
-      "title": "Belgium condemns attack by Israeli occupiers on Palestinians, diplomats in West Bank",
-      "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxOa3BpMlUtR1VPS3ZoT0wzTmxkNkdxOERaTVRiX0RQUzhqcExYOWRDZ3RJenFGTkEzbzVlMEU5MDA1bGJqT0dPTTBoVHlSU1RzbHI3U2xpOUJPaDZFdVM4UW8xZG1PRUlxT1pWNGNBZGFDek4tY1c2a1JSYUFLSTZudnZQZUdDNjlxdGVBVlNGaEFuOW52OE53Xy05NjFfRHpSQjd4TG1qUy1qMlVZRThlaG1ZWV9LM3E3OG9pbFdIVjhoV3p5MzZiVdIByAFBVV95cUxOa3BpMlUtR1VPS3ZoT0wzTmxkNkdxOERaTVRiX0RQUzhqcExYOWRDZ3RJenFGTkEzbzVlMEU5MDA1bGJqT0dPTTBoVHlSU1RzbHI3U2xpOUJPaDZFdVM4UW8xZG1PRUlxT1pWNGNBZGFDek4tY1c2a1JSYUFLSTZudnZQZUdDNjlxdGVBVlNGaEFuOW52OE53Xy05NjFfRHpSQjd4TG1qUy1qMlVZRThlaG1ZWV9LM3E3OG9pbFdIVjhoV3p5MzZiVQ?oc=5",
-      "source": "A News",
-      "compound": -0.75
-     },
-     {
       "title": "Government snubs 'emergency button' to pursue long-term budget plans",
       "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQeFJaTE51N0JBZlFaVDYtR042MzNpRmdYYWV0MTlhRGphZVRjNFc1UmJpTi0xQlVoelBLdEltY0ktTk53X2NLVWFNd1YzT1ZJMUNGcUtEcTd1S1FzdDVPdkY4M21WNXNzVWVLSDY0X2JPbHJPQWlIa0NMN1pRaThTRmdOa1FYeWNOZHZ1SGN4NzRwOEJMTGJ3MmZVczF2OVZMMFFQZVk4cw?oc=5",
       "source": "The Brussels Times",
@@ -8747,11 +8747,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 35.0,
+    "score": 34.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 35.0
+      "score": 34.0
      }
     ]
    },
@@ -8768,11 +8768,11 @@
     },
     "cagr_10": 2.23,
     "cagr_25": 1.96,
-    "gdp_10": 904.2,
-    "gdp_25": 1177.7,
+    "gdp_10": 904.1,
+    "gdp_25": 1177.5,
     "stability_10": 56.0,
     "stability_25": 56.4,
-    "debt_10": 96.8,
+    "debt_10": 96.9,
     "debt_25": 93.0,
     "series": [
      {
@@ -8780,42 +8780,42 @@
       "gdp": 725.5,
       "growth": 0.98,
       "debt": 104.0,
-      "stability": 48.6
+      "stability": 48.3
      },
      {
       "year": 2026,
       "gdp": 743.7,
       "growth": 2.52,
       "debt": 103.0,
-      "stability": 52.3
+      "stability": 52.1
      },
      {
       "year": 2027,
       "gdp": 761.9,
       "growth": 2.44,
       "debt": 102.0,
-      "stability": 53.3
+      "stability": 53.2
      },
      {
       "year": 2028,
       "gdp": 779.9,
-      "growth": 2.37,
+      "growth": 2.36,
       "debt": 101.2,
-      "stability": 54.1
+      "stability": 54.0
      },
      {
       "year": 2029,
       "gdp": 797.8,
       "growth": 2.3,
       "debt": 100.4,
-      "stability": 54.7
+      "stability": 54.6
      },
      {
       "year": 2030,
-      "gdp": 815.7,
+      "gdp": 815.6,
       "growth": 2.24,
-      "debt": 99.6,
-      "stability": 55.1
+      "debt": 99.7,
+      "stability": 55.0
      },
      {
       "year": 2031,
@@ -8826,133 +8826,133 @@
      },
      {
       "year": 2032,
-      "gdp": 851.2,
+      "gdp": 851.1,
       "growth": 2.13,
       "debt": 98.4,
       "stability": 55.6
      },
      {
       "year": 2033,
-      "gdp": 868.9,
+      "gdp": 868.8,
       "growth": 2.08,
       "debt": 97.8,
       "stability": 55.8
      },
      {
       "year": 2034,
-      "gdp": 886.5,
+      "gdp": 886.4,
       "growth": 2.03,
       "debt": 97.3,
       "stability": 55.9
      },
      {
       "year": 2035,
-      "gdp": 904.2,
+      "gdp": 904.1,
       "growth": 1.99,
-      "debt": 96.8,
+      "debt": 96.9,
       "stability": 56.0
      },
      {
       "year": 2036,
-      "gdp": 921.9,
+      "gdp": 921.7,
       "growth": 1.95,
       "debt": 96.4,
       "stability": 56.1
      },
      {
       "year": 2037,
-      "gdp": 939.5,
+      "gdp": 939.4,
       "growth": 1.92,
       "debt": 96.0,
       "stability": 56.2
      },
      {
       "year": 2038,
-      "gdp": 957.3,
+      "gdp": 957.2,
       "growth": 1.89,
-      "debt": 95.6,
+      "debt": 95.7,
       "stability": 56.2
      },
      {
       "year": 2039,
-      "gdp": 975.1,
+      "gdp": 974.9,
       "growth": 1.86,
       "debt": 95.3,
       "stability": 56.2
      },
      {
       "year": 2040,
-      "gdp": 992.9,
+      "gdp": 992.8,
       "growth": 1.83,
       "debt": 95.0,
       "stability": 56.3
      },
      {
       "year": 2041,
-      "gdp": 1010.9,
+      "gdp": 1010.7,
       "growth": 1.81,
       "debt": 94.7,
       "stability": 56.3
      },
      {
       "year": 2042,
-      "gdp": 1028.9,
+      "gdp": 1028.7,
       "growth": 1.78,
       "debt": 94.5,
       "stability": 56.3
      },
      {
       "year": 2043,
-      "gdp": 1047.0,
+      "gdp": 1046.9,
       "growth": 1.76,
       "debt": 94.2,
       "stability": 56.3
      },
      {
       "year": 2044,
-      "gdp": 1065.2,
+      "gdp": 1065.1,
       "growth": 1.74,
       "debt": 94.0,
       "stability": 56.3
      },
      {
       "year": 2045,
-      "gdp": 1083.6,
+      "gdp": 1083.4,
       "growth": 1.72,
       "debt": 93.8,
       "stability": 56.3
      },
      {
       "year": 2046,
-      "gdp": 1102.1,
+      "gdp": 1102.0,
       "growth": 1.71,
       "debt": 93.6,
       "stability": 56.3
      },
      {
       "year": 2047,
-      "gdp": 1120.8,
+      "gdp": 1120.6,
       "growth": 1.69,
       "debt": 93.4,
       "stability": 56.3
      },
      {
       "year": 2048,
-      "gdp": 1139.6,
+      "gdp": 1139.4,
       "growth": 1.68,
-      "debt": 93.2,
+      "debt": 93.3,
       "stability": 56.3
      },
      {
       "year": 2049,
-      "gdp": 1158.6,
+      "gdp": 1158.4,
       "growth": 1.67,
       "debt": 93.1,
-      "stability": 56.4
+      "stability": 56.3
      },
      {
       "year": 2050,
-      "gdp": 1177.7,
+      "gdp": 1177.5,
       "growth": 1.65,
       "debt": 93.0,
       "stability": 56.4
@@ -9037,19 +9037,19 @@
     }
    },
    "confidence": {
-    "score": 83.5,
+    "score": 83.2,
     "label": "Optimiste",
     "components": {
      "macro": 98.4,
      "fiscal": 90.2,
-     "sentiment": 57.0
+     "sentiment": 56.0
     },
     "subscores": {
      "growth": 100.0,
      "inflation": 96.6,
      "debt": 87.7,
      "current_account": 93.9,
-     "sentiment": 57.0
+     "sentiment": 56.0
     },
     "factors": [
      {
@@ -9083,14 +9083,14 @@
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 57.0,
-      "impact": 2.1,
-      "detail": "VADER moyen +0.07"
+      "subscore": 56.0,
+      "impact": 1.8,
+      "detail": "VADER moyen +0.06"
      }
     ]
    },
    "sentiment": {
-    "compound": 0.07,
+    "compound": 0.06,
     "n_articles": 40,
     "source": "Google News RSS",
     "headlines": [
@@ -9133,11 +9133,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 57.0,
+    "score": 56.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 57.0
+      "score": 56.0
      }
     ]
    },
@@ -9154,8 +9154,8 @@
     },
     "cagr_10": 4.77,
     "cagr_25": 4.09,
-    "gdp_10": 1150.6,
-    "gdp_25": 1966.1,
+    "gdp_10": 1150.4,
+    "gdp_25": 1965.8,
     "stability_10": 73.2,
     "stability_25": 69.9,
     "debt_10": 29.8,
@@ -9166,179 +9166,179 @@
       "gdp": 721.7,
       "growth": 12.34,
       "debt": 41.0,
-      "stability": 83.5
+      "stability": 83.2
      },
      {
       "year": 2026,
       "gdp": 761.7,
       "growth": 5.55,
       "debt": 39.4,
-      "stability": 79.3
+      "stability": 79.0
      },
      {
       "year": 2027,
-      "gdp": 802.4,
+      "gdp": 802.3,
       "growth": 5.33,
       "debt": 38.0,
-      "stability": 78.2
+      "stability": 78.0
      },
      {
       "year": 2028,
-      "gdp": 843.6,
+      "gdp": 843.5,
       "growth": 5.14,
       "debt": 36.7,
-      "stability": 77.2
+      "stability": 77.1
      },
      {
       "year": 2029,
       "gdp": 885.4,
       "growth": 4.96,
       "debt": 35.5,
-      "stability": 76.5
+      "stability": 76.4
      },
      {
       "year": 2030,
-      "gdp": 927.9,
-      "growth": 4.8,
+      "gdp": 927.8,
+      "growth": 4.79,
       "debt": 34.4,
-      "stability": 75.8
+      "stability": 75.7
      },
      {
       "year": 2031,
-      "gdp": 971.0,
+      "gdp": 970.9,
       "growth": 4.65,
       "debt": 33.3,
       "stability": 75.1
      },
      {
       "year": 2032,
-      "gdp": 1014.8,
+      "gdp": 1014.7,
       "growth": 4.51,
       "debt": 32.4,
       "stability": 74.6
      },
      {
       "year": 2033,
-      "gdp": 1059.3,
-      "growth": 4.39,
+      "gdp": 1059.2,
+      "growth": 4.38,
       "debt": 31.5,
       "stability": 74.1
      },
      {
       "year": 2034,
-      "gdp": 1104.5,
+      "gdp": 1104.4,
       "growth": 4.27,
       "debt": 30.6,
-      "stability": 73.7
+      "stability": 73.6
      },
      {
       "year": 2035,
-      "gdp": 1150.6,
+      "gdp": 1150.4,
       "growth": 4.17,
       "debt": 29.8,
       "stability": 73.2
      },
      {
       "year": 2036,
-      "gdp": 1197.4,
+      "gdp": 1197.3,
       "growth": 4.07,
       "debt": 29.1,
       "stability": 72.9
      },
      {
       "year": 2037,
-      "gdp": 1245.1,
-      "growth": 3.99,
+      "gdp": 1245.0,
+      "growth": 3.98,
       "debt": 28.4,
       "stability": 72.5
      },
      {
       "year": 2038,
-      "gdp": 1293.8,
-      "growth": 3.91,
+      "gdp": 1293.6,
+      "growth": 3.9,
       "debt": 27.8,
       "stability": 72.2
      },
      {
       "year": 2039,
-      "gdp": 1343.3,
+      "gdp": 1343.2,
       "growth": 3.83,
       "debt": 27.1,
       "stability": 71.9
      },
      {
       "year": 2040,
-      "gdp": 1393.9,
-      "growth": 3.77,
+      "gdp": 1393.7,
+      "growth": 3.76,
       "debt": 26.5,
       "stability": 71.7
      },
      {
       "year": 2041,
-      "gdp": 1445.5,
+      "gdp": 1445.4,
       "growth": 3.7,
       "debt": 26.0,
       "stability": 71.4
      },
      {
       "year": 2042,
-      "gdp": 1498.3,
+      "gdp": 1498.1,
       "growth": 3.65,
       "debt": 25.4,
       "stability": 71.2
      },
      {
       "year": 2043,
-      "gdp": 1552.1,
+      "gdp": 1551.9,
       "growth": 3.6,
       "debt": 24.9,
       "stability": 71.0
      },
      {
       "year": 2044,
-      "gdp": 1607.2,
+      "gdp": 1607.0,
       "growth": 3.55,
       "debt": 24.4,
       "stability": 70.8
      },
      {
       "year": 2045,
-      "gdp": 1663.6,
+      "gdp": 1663.3,
       "growth": 3.51,
       "debt": 24.0,
       "stability": 70.6
      },
      {
       "year": 2046,
-      "gdp": 1721.2,
+      "gdp": 1721.0,
       "growth": 3.47,
       "debt": 23.5,
       "stability": 70.5
      },
      {
       "year": 2047,
-      "gdp": 1780.2,
+      "gdp": 1780.0,
       "growth": 3.43,
       "debt": 23.1,
       "stability": 70.3
      },
      {
       "year": 2048,
-      "gdp": 1840.7,
+      "gdp": 1840.4,
       "growth": 3.4,
       "debt": 22.6,
       "stability": 70.2
      },
      {
       "year": 2049,
-      "gdp": 1902.6,
-      "growth": 3.37,
+      "gdp": 1902.4,
+      "growth": 3.36,
       "debt": 22.2,
       "stability": 70.0
      },
      {
       "year": 2050,
-      "gdp": 1966.1,
+      "gdp": 1965.8,
       "growth": 3.34,
       "debt": 21.8,
       "stability": 69.9
@@ -9812,19 +9812,19 @@
     }
    },
    "confidence": {
-    "score": 71.1,
+    "score": 71.4,
     "label": "Optimiste",
     "components": {
      "macro": 58.3,
      "fiscal": 93.3,
-     "sentiment": 66.0
+     "sentiment": 67.0
     },
     "subscores": {
      "growth": 40.4,
      "inflation": 80.2,
      "debt": 90.4,
      "current_account": 97.6,
-     "sentiment": 66.0
+     "sentiment": 67.0
     },
     "factors": [
      {
@@ -9851,9 +9851,9 @@
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 66.0,
-      "impact": 4.8,
-      "detail": "VADER moyen +0.16"
+      "subscore": 67.0,
+      "impact": 5.1,
+      "detail": "VADER moyen +0.17"
      },
      {
       "label": "Croissance du PIB",
@@ -9865,7 +9865,7 @@
     ]
    },
    "sentiment": {
-    "compound": 0.16,
+    "compound": 0.17,
     "n_articles": 40,
     "source": "Google News RSS",
     "headlines": [
@@ -9908,11 +9908,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 66.0,
+    "score": 67.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 66.0
+      "score": 67.0
      }
     ]
    },
@@ -9929,58 +9929,58 @@
     },
     "cagr_10": 1.65,
     "cagr_25": 1.46,
-    "gdp_10": 787.6,
-    "gdp_25": 960.7,
+    "gdp_10": 787.7,
+    "gdp_25": 960.9,
     "stability_10": 66.2,
     "stability_25": 64.2,
     "debt_10": 33.5,
-    "debt_25": 34.4,
+    "debt_25": 34.3,
     "series": [
      {
       "year": 2025,
       "gdp": 669.0,
       "growth": 1.54,
       "debt": 34.0,
-      "stability": 71.1
+      "stability": 71.4
      },
      {
       "year": 2026,
       "gdp": 681.5,
       "growth": 1.87,
       "debt": 33.9,
-      "stability": 70.5
+      "stability": 70.7
      },
      {
       "year": 2027,
       "gdp": 693.8,
-      "growth": 1.8,
+      "growth": 1.81,
       "debt": 33.8,
-      "stability": 69.4
+      "stability": 69.6
      },
      {
       "year": 2028,
       "gdp": 705.9,
       "growth": 1.75,
       "debt": 33.7,
-      "stability": 68.6
+      "stability": 68.8
      },
      {
       "year": 2029,
       "gdp": 717.9,
       "growth": 1.7,
       "debt": 33.6,
-      "stability": 68.0
+      "stability": 68.1
      },
      {
       "year": 2030,
-      "gdp": 729.7,
+      "gdp": 729.8,
       "growth": 1.65,
       "debt": 33.6,
       "stability": 67.6
      },
      {
       "year": 2031,
-      "gdp": 741.4,
+      "gdp": 741.5,
       "growth": 1.61,
       "debt": 33.5,
       "stability": 67.2
@@ -9994,128 +9994,128 @@
      },
      {
       "year": 2033,
-      "gdp": 764.6,
-      "growth": 1.53,
+      "gdp": 764.7,
+      "growth": 1.54,
       "debt": 33.5,
       "stability": 66.6
      },
      {
       "year": 2034,
-      "gdp": 776.1,
+      "gdp": 776.2,
       "growth": 1.5,
       "debt": 33.5,
       "stability": 66.4
      },
      {
       "year": 2035,
-      "gdp": 787.6,
-      "growth": 1.47,
+      "gdp": 787.7,
+      "growth": 1.48,
       "debt": 33.5,
       "stability": 66.2
      },
      {
       "year": 2036,
-      "gdp": 799.0,
+      "gdp": 799.1,
       "growth": 1.45,
       "debt": 33.5,
       "stability": 66.0
      },
      {
       "year": 2037,
-      "gdp": 810.4,
+      "gdp": 810.5,
       "growth": 1.43,
       "debt": 33.6,
       "stability": 65.8
      },
      {
       "year": 2038,
-      "gdp": 821.7,
+      "gdp": 821.9,
       "growth": 1.4,
       "debt": 33.6,
       "stability": 65.6
      },
      {
       "year": 2039,
-      "gdp": 833.1,
+      "gdp": 833.2,
       "growth": 1.38,
       "debt": 33.6,
       "stability": 65.5
      },
      {
       "year": 2040,
-      "gdp": 844.5,
+      "gdp": 844.6,
       "growth": 1.37,
       "debt": 33.7,
       "stability": 65.3
      },
      {
       "year": 2041,
-      "gdp": 855.9,
+      "gdp": 856.0,
       "growth": 1.35,
       "debt": 33.7,
       "stability": 65.2
      },
      {
       "year": 2042,
-      "gdp": 867.4,
+      "gdp": 867.5,
       "growth": 1.34,
       "debt": 33.8,
       "stability": 65.1
      },
      {
       "year": 2043,
-      "gdp": 878.8,
+      "gdp": 878.9,
       "growth": 1.32,
       "debt": 33.8,
       "stability": 64.9
      },
      {
       "year": 2044,
-      "gdp": 890.3,
+      "gdp": 890.5,
       "growth": 1.31,
       "debt": 33.9,
       "stability": 64.8
      },
      {
       "year": 2045,
-      "gdp": 901.9,
+      "gdp": 902.0,
       "growth": 1.3,
       "debt": 34.0,
       "stability": 64.7
      },
      {
       "year": 2046,
-      "gdp": 913.5,
+      "gdp": 913.7,
       "growth": 1.29,
       "debt": 34.0,
       "stability": 64.6
      },
      {
       "year": 2047,
-      "gdp": 925.2,
+      "gdp": 925.4,
       "growth": 1.28,
       "debt": 34.1,
       "stability": 64.5
      },
      {
       "year": 2048,
-      "gdp": 937.0,
+      "gdp": 937.1,
       "growth": 1.27,
       "debt": 34.2,
       "stability": 64.4
      },
      {
       "year": 2049,
-      "gdp": 948.8,
+      "gdp": 949.0,
       "growth": 1.26,
       "debt": 34.3,
       "stability": 64.3
      },
      {
       "year": 2050,
-      "gdp": 960.7,
+      "gdp": 960.9,
       "growth": 1.26,
-      "debt": 34.4,
+      "debt": 34.3,
       "stability": 64.2
      }
     ]
@@ -10970,27 +10970,27 @@
     }
    },
    "confidence": {
-    "score": 60.1,
+    "score": 60.4,
     "label": "Optimiste",
     "components": {
      "macro": 54.0,
      "fiscal": 60.4,
-     "sentiment": 68.0
+     "sentiment": 69.0
     },
     "subscores": {
      "growth": 34.7,
      "inflation": 77.5,
      "debt": 58.9,
      "current_account": 62.6,
-     "sentiment": 68.0
+     "sentiment": 69.0
     },
     "factors": [
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 68.0,
-      "impact": 5.4,
-      "detail": "VADER moyen +0.18"
+      "subscore": 69.0,
+      "impact": 5.7,
+      "detail": "VADER moyen +0.19"
      },
      {
       "label": "Maîtrise de l'inflation",
@@ -11023,8 +11023,8 @@
     ]
    },
    "sentiment": {
-    "compound": 0.18,
-    "n_articles": 20,
+    "compound": 0.19,
+    "n_articles": 19,
     "source": "Google News RSS",
     "headlines": [
      {
@@ -11066,11 +11066,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 68.0,
+    "score": 69.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 68.0
+      "score": 69.0
      }
     ]
    },
@@ -11087,11 +11087,11 @@
     },
     "cagr_10": 1.7,
     "cagr_25": 1.51,
-    "gdp_10": 685.6,
-    "gdp_25": 843.7,
+    "gdp_10": 685.7,
+    "gdp_25": 843.8,
     "stability_10": 58.6,
     "stability_25": 58.0,
-    "debt_10": 79.5,
+    "debt_10": 79.4,
     "debt_25": 80.7,
     "series": [
      {
@@ -11099,39 +11099,39 @@
       "gdp": 579.5,
       "growth": 0.62,
       "debt": 81.0,
-      "stability": 60.1
+      "stability": 60.4
      },
      {
       "year": 2026,
       "gdp": 590.5,
       "growth": 1.9,
       "debt": 80.7,
-      "stability": 61.0
+      "stability": 61.2
      },
      {
       "year": 2027,
       "gdp": 601.4,
       "growth": 1.85,
       "debt": 80.4,
-      "stability": 60.2
+      "stability": 60.4
      },
      {
       "year": 2028,
       "gdp": 612.2,
       "growth": 1.79,
       "debt": 80.2,
-      "stability": 59.7
+      "stability": 59.8
      },
      {
       "year": 2029,
       "gdp": 622.9,
-      "growth": 1.74,
+      "growth": 1.75,
       "debt": 80.0,
-      "stability": 59.3
+      "stability": 59.4
      },
      {
       "year": 2030,
-      "gdp": 633.4,
+      "gdp": 633.5,
       "growth": 1.7,
       "debt": 79.8,
       "stability": 59.1
@@ -11141,11 +11141,11 @@
       "gdp": 644.0,
       "growth": 1.66,
       "debt": 79.7,
-      "stability": 58.9
+      "stability": 59.0
      },
      {
       "year": 2032,
-      "gdp": 654.4,
+      "gdp": 654.5,
       "growth": 1.63,
       "debt": 79.6,
       "stability": 58.8
@@ -11155,123 +11155,123 @@
       "gdp": 664.9,
       "growth": 1.59,
       "debt": 79.5,
-      "stability": 58.7
+      "stability": 58.8
      },
      {
       "year": 2034,
-      "gdp": 675.2,
+      "gdp": 675.3,
       "growth": 1.56,
       "debt": 79.5,
       "stability": 58.7
      },
      {
       "year": 2035,
-      "gdp": 685.6,
+      "gdp": 685.7,
       "growth": 1.53,
-      "debt": 79.5,
+      "debt": 79.4,
       "stability": 58.6
      },
      {
       "year": 2036,
-      "gdp": 695.9,
+      "gdp": 696.0,
       "growth": 1.51,
       "debt": 79.4,
       "stability": 58.6
      },
      {
       "year": 2037,
-      "gdp": 706.3,
+      "gdp": 706.4,
       "growth": 1.49,
-      "debt": 79.5,
+      "debt": 79.4,
       "stability": 58.6
      },
      {
       "year": 2038,
-      "gdp": 716.6,
+      "gdp": 716.7,
       "growth": 1.46,
       "debt": 79.5,
       "stability": 58.5
      },
      {
       "year": 2039,
-      "gdp": 727.0,
-      "growth": 1.44,
+      "gdp": 727.1,
+      "growth": 1.45,
       "debt": 79.5,
       "stability": 58.5
      },
      {
       "year": 2040,
-      "gdp": 737.3,
+      "gdp": 737.4,
       "growth": 1.43,
       "debt": 79.6,
       "stability": 58.4
      },
      {
       "year": 2041,
-      "gdp": 747.7,
+      "gdp": 747.8,
       "growth": 1.41,
-      "debt": 79.7,
+      "debt": 79.6,
       "stability": 58.4
      },
      {
       "year": 2042,
-      "gdp": 758.2,
+      "gdp": 758.3,
       "growth": 1.4,
       "debt": 79.7,
       "stability": 58.4
      },
      {
       "year": 2043,
-      "gdp": 768.7,
+      "gdp": 768.8,
       "growth": 1.38,
       "debt": 79.8,
       "stability": 58.3
      },
      {
       "year": 2044,
-      "gdp": 779.2,
+      "gdp": 779.3,
       "growth": 1.37,
       "debt": 79.9,
       "stability": 58.3
      },
      {
       "year": 2045,
-      "gdp": 789.8,
+      "gdp": 789.9,
       "growth": 1.36,
       "debt": 80.0,
       "stability": 58.2
      },
      {
       "year": 2046,
-      "gdp": 800.4,
+      "gdp": 800.5,
       "growth": 1.35,
       "debt": 80.2,
       "stability": 58.2
      },
      {
       "year": 2047,
-      "gdp": 811.1,
+      "gdp": 811.2,
       "growth": 1.34,
       "debt": 80.3,
       "stability": 58.1
      },
      {
       "year": 2048,
-      "gdp": 821.9,
+      "gdp": 822.0,
       "growth": 1.33,
       "debt": 80.4,
       "stability": 58.1
      },
      {
       "year": 2049,
-      "gdp": 832.8,
+      "gdp": 832.9,
       "growth": 1.32,
       "debt": 80.6,
       "stability": 58.0
      },
      {
       "year": 2050,
-      "gdp": 843.7,
+      "gdp": 843.8,
       "growth": 1.31,
       "debt": 80.7,
       "stability": 58.0
@@ -12130,27 +12130,27 @@
     }
    },
    "confidence": {
-    "score": 74.7,
+    "score": 74.4,
     "label": "Optimiste",
     "components": {
      "macro": 59.5,
      "fiscal": 91.8,
-     "sentiment": 78.0
+     "sentiment": 77.0
     },
     "subscores": {
      "growth": 39.3,
      "inflation": 84.1,
      "debt": 86.3,
      "current_account": 100.0,
-     "sentiment": 78.0
+     "sentiment": 77.0
     },
     "factors": [
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 78.0,
-      "impact": 8.4,
-      "detail": "VADER moyen +0.28"
+      "subscore": 77.0,
+      "impact": 8.1,
+      "detail": "VADER moyen +0.27"
      },
      {
       "label": "Viabilité de la dette",
@@ -12183,8 +12183,8 @@
     ]
    },
    "sentiment": {
-    "compound": 0.28,
-    "n_articles": 33,
+    "compound": 0.27,
+    "n_articles": 34,
     "source": "Google News RSS",
     "headlines": [
      {
@@ -12226,11 +12226,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 78.0,
+    "score": 77.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 78.0
+      "score": 77.0
      }
     ]
    },
@@ -12245,10 +12245,10 @@
      "confidence_adjustment": 0.2,
      "real_interest_rate": 1.5
     },
-    "cagr_10": 2.08,
+    "cagr_10": 2.07,
     "cagr_25": 1.86,
-    "gdp_10": 651.9,
-    "gdp_25": 841.6,
+    "gdp_10": 651.8,
+    "gdp_25": 841.5,
     "stability_10": 69.9,
     "stability_25": 65.9,
     "debt_10": 41.6,
@@ -12259,35 +12259,35 @@
       "gdp": 530.8,
       "growth": 1.09,
       "debt": 44.0,
-      "stability": 74.7
+      "stability": 74.4
      },
      {
       "year": 2026,
       "gdp": 543.1,
       "growth": 2.33,
       "debt": 43.6,
-      "stability": 74.7
+      "stability": 74.5
      },
      {
       "year": 2027,
       "gdp": 555.4,
       "growth": 2.26,
       "debt": 43.3,
-      "stability": 73.2
+      "stability": 73.1
      },
      {
       "year": 2028,
       "gdp": 567.6,
-      "growth": 2.2,
+      "growth": 2.19,
       "debt": 43.0,
-      "stability": 72.2
+      "stability": 72.1
      },
      {
       "year": 2029,
       "gdp": 579.7,
-      "growth": 2.14,
+      "growth": 2.13,
       "debt": 42.8,
-      "stability": 71.4
+      "stability": 71.3
      },
      {
       "year": 2030,
@@ -12301,60 +12301,60 @@
       "gdp": 603.8,
       "growth": 2.03,
       "debt": 42.3,
-      "stability": 70.6
+      "stability": 70.5
      },
      {
       "year": 2032,
-      "gdp": 615.9,
+      "gdp": 615.8,
       "growth": 1.99,
       "debt": 42.1,
       "stability": 70.3
      },
      {
       "year": 2033,
-      "gdp": 627.9,
+      "gdp": 627.8,
       "growth": 1.95,
       "debt": 41.9,
       "stability": 70.1
      },
      {
       "year": 2034,
-      "gdp": 639.9,
+      "gdp": 639.8,
       "growth": 1.91,
       "debt": 41.7,
       "stability": 70.0
      },
      {
       "year": 2035,
-      "gdp": 651.9,
+      "gdp": 651.8,
       "growth": 1.88,
       "debt": 41.6,
       "stability": 69.9
      },
      {
       "year": 2036,
-      "gdp": 664.0,
+      "gdp": 663.9,
       "growth": 1.85,
       "debt": 41.4,
       "stability": 69.6
      },
      {
       "year": 2037,
-      "gdp": 676.1,
+      "gdp": 676.0,
       "growth": 1.82,
       "debt": 41.3,
-      "stability": 69.2
+      "stability": 69.1
      },
      {
       "year": 2038,
-      "gdp": 688.2,
+      "gdp": 688.1,
       "growth": 1.8,
       "debt": 41.2,
       "stability": 68.8
      },
      {
       "year": 2039,
-      "gdp": 700.5,
+      "gdp": 700.4,
       "growth": 1.78,
       "debt": 41.1,
       "stability": 68.4
@@ -12368,70 +12368,70 @@
      },
      {
       "year": 2041,
-      "gdp": 725.1,
+      "gdp": 725.0,
       "growth": 1.74,
       "debt": 40.9,
       "stability": 67.8
      },
      {
       "year": 2042,
-      "gdp": 737.6,
+      "gdp": 737.5,
       "growth": 1.72,
       "debt": 40.8,
       "stability": 67.5
      },
      {
       "year": 2043,
-      "gdp": 750.2,
+      "gdp": 750.1,
       "growth": 1.7,
       "debt": 40.7,
       "stability": 67.3
      },
      {
       "year": 2044,
-      "gdp": 762.8,
+      "gdp": 762.7,
       "growth": 1.69,
       "debt": 40.6,
       "stability": 67.0
      },
      {
       "year": 2045,
-      "gdp": 775.6,
+      "gdp": 775.5,
       "growth": 1.68,
       "debt": 40.6,
       "stability": 66.8
      },
      {
       "year": 2046,
-      "gdp": 788.6,
+      "gdp": 788.4,
       "growth": 1.67,
       "debt": 40.5,
       "stability": 66.6
      },
      {
       "year": 2047,
-      "gdp": 801.6,
+      "gdp": 801.5,
       "growth": 1.65,
       "debt": 40.4,
       "stability": 66.4
      },
      {
       "year": 2048,
-      "gdp": 814.8,
+      "gdp": 814.7,
       "growth": 1.64,
       "debt": 40.4,
       "stability": 66.2
      },
      {
       "year": 2049,
-      "gdp": 828.1,
+      "gdp": 828.0,
       "growth": 1.64,
       "debt": 40.3,
       "stability": 66.1
      },
      {
       "year": 2050,
-      "gdp": 841.6,
+      "gdp": 841.5,
       "growth": 1.63,
       "debt": 40.3,
       "stability": 65.9
@@ -12904,19 +12904,19 @@
     }
    },
    "confidence": {
-    "score": 70.3,
+    "score": 70.6,
     "label": "Optimiste",
     "components": {
      "macro": 85.0,
      "fiscal": 56.0,
-     "sentiment": 65.0
+     "sentiment": 66.0
     },
     "subscores": {
      "growth": 77.3,
      "inflation": 94.5,
      "debt": 76.1,
      "current_account": 25.8,
-     "sentiment": 65.0
+     "sentiment": 66.0
     },
     "factors": [
      {
@@ -12934,18 +12934,18 @@
       "detail": "+4.4 % (moy. 5 ans +5.8 %)"
      },
      {
+      "label": "Sentiment de l'actualité",
+      "weight": 0.3,
+      "subscore": 66.0,
+      "impact": 4.8,
+      "detail": "VADER moyen +0.16"
+     },
+     {
       "label": "Viabilité de la dette",
       "weight": 0.18,
       "subscore": 76.1,
       "impact": 4.7,
       "detail": "61 % du PIB"
-     },
-     {
-      "label": "Sentiment de l'actualité",
-      "weight": 0.3,
-      "subscore": 65.0,
-      "impact": 4.5,
-      "detail": "VADER moyen +0.15"
      },
      {
       "label": "Balance courante",
@@ -12957,8 +12957,8 @@
     ]
    },
    "sentiment": {
-    "compound": 0.15,
-    "n_articles": 39,
+    "compound": 0.16,
+    "n_articles": 38,
     "source": "Google News RSS",
     "headlines": [
      {
@@ -13000,11 +13000,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 65.0,
+    "score": 66.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 65.0
+      "score": 66.0
      }
     ]
    },
@@ -13021,8 +13021,8 @@
     },
     "cagr_10": 4.72,
     "cagr_25": 3.87,
-    "gdp_10": 772.7,
-    "gdp_25": 1258.8,
+    "gdp_10": 772.8,
+    "gdp_25": 1259.0,
     "stability_10": 67.6,
     "stability_25": 66.7,
     "debt_10": 44.6,
@@ -13033,42 +13033,42 @@
       "gdp": 487.1,
       "growth": 4.4,
       "debt": 61.0,
-      "stability": 70.3
+      "stability": 70.6
      },
      {
       "year": 2026,
       "gdp": 514.7,
       "growth": 5.67,
       "debt": 58.6,
-      "stability": 71.4
+      "stability": 71.6
      },
      {
       "year": 2027,
       "gdp": 542.5,
       "growth": 5.41,
       "debt": 56.4,
-      "stability": 70.4
+      "stability": 70.6
      },
      {
       "year": 2028,
-      "gdp": 570.5,
+      "gdp": 570.6,
       "growth": 5.17,
       "debt": 54.5,
-      "stability": 69.7
+      "stability": 69.8
      },
      {
       "year": 2029,
       "gdp": 598.8,
       "growth": 4.95,
       "debt": 52.7,
-      "stability": 69.1
+      "stability": 69.2
      },
      {
       "year": 2030,
-      "gdp": 627.2,
+      "gdp": 627.3,
       "growth": 4.75,
       "debt": 51.0,
-      "stability": 68.7
+      "stability": 68.8
      },
      {
       "year": 2031,
@@ -13079,133 +13079,133 @@
      },
      {
       "year": 2032,
-      "gdp": 684.7,
+      "gdp": 684.8,
       "growth": 4.4,
       "debt": 48.2,
       "stability": 68.1
      },
      {
       "year": 2033,
-      "gdp": 713.8,
+      "gdp": 713.9,
       "growth": 4.25,
       "debt": 46.9,
       "stability": 67.9
      },
      {
       "year": 2034,
-      "gdp": 743.1,
-      "growth": 4.1,
+      "gdp": 743.2,
+      "growth": 4.11,
       "debt": 45.7,
       "stability": 67.7
      },
      {
       "year": 2035,
-      "gdp": 772.7,
+      "gdp": 772.8,
       "growth": 3.98,
       "debt": 44.6,
       "stability": 67.6
      },
      {
       "year": 2036,
-      "gdp": 802.5,
+      "gdp": 802.6,
       "growth": 3.86,
       "debt": 43.6,
       "stability": 67.4
      },
      {
       "year": 2037,
-      "gdp": 832.5,
+      "gdp": 832.6,
       "growth": 3.75,
       "debt": 42.7,
       "stability": 67.3
      },
      {
       "year": 2038,
-      "gdp": 862.9,
+      "gdp": 863.0,
       "growth": 3.65,
       "debt": 41.8,
       "stability": 67.2
      },
      {
       "year": 2039,
-      "gdp": 893.6,
+      "gdp": 893.7,
       "growth": 3.56,
       "debt": 41.0,
       "stability": 67.2
      },
      {
       "year": 2040,
-      "gdp": 924.6,
+      "gdp": 924.7,
       "growth": 3.47,
       "debt": 40.2,
       "stability": 67.1
      },
      {
       "year": 2041,
-      "gdp": 956.0,
+      "gdp": 956.1,
       "growth": 3.39,
       "debt": 39.4,
       "stability": 67.0
      },
      {
       "year": 2042,
-      "gdp": 987.7,
+      "gdp": 987.9,
       "growth": 3.32,
       "debt": 38.7,
       "stability": 67.0
      },
      {
       "year": 2043,
-      "gdp": 1019.9,
+      "gdp": 1020.0,
       "growth": 3.26,
       "debt": 38.1,
       "stability": 66.9
      },
      {
       "year": 2044,
-      "gdp": 1052.5,
+      "gdp": 1052.6,
       "growth": 3.2,
       "debt": 37.5,
       "stability": 66.9
      },
      {
       "year": 2045,
-      "gdp": 1085.6,
+      "gdp": 1085.7,
       "growth": 3.14,
       "debt": 36.9,
       "stability": 66.9
      },
      {
       "year": 2046,
-      "gdp": 1119.1,
+      "gdp": 1119.3,
       "growth": 3.09,
       "debt": 36.3,
       "stability": 66.8
      },
      {
       "year": 2047,
-      "gdp": 1153.2,
+      "gdp": 1153.3,
       "growth": 3.04,
-      "debt": 35.8,
+      "debt": 35.7,
       "stability": 66.8
      },
      {
       "year": 2048,
-      "gdp": 1187.8,
+      "gdp": 1188.0,
       "growth": 3.0,
       "debt": 35.2,
       "stability": 66.8
      },
      {
       "year": 2049,
-      "gdp": 1223.0,
+      "gdp": 1223.2,
       "growth": 2.96,
       "debt": 34.7,
       "stability": 66.7
      },
      {
       "year": 2050,
-      "gdp": 1258.8,
+      "gdp": 1259.0,
       "growth": 2.93,
       "debt": 34.2,
       "stability": 66.7
@@ -13290,19 +13290,19 @@
     }
    },
    "confidence": {
-    "score": 73.3,
+    "score": 73.6,
     "label": "Optimiste",
     "components": {
      "macro": 84.6,
      "fiscal": 68.6,
-     "sentiment": 63.0
+     "sentiment": 64.0
     },
     "subscores": {
      "growth": 80.0,
      "inflation": 90.2,
      "debt": 73.4,
      "current_account": 61.3,
-     "sentiment": 63.0
+     "sentiment": 64.0
     },
     "factors": [
      {
@@ -13329,9 +13329,9 @@
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 63.0,
-      "impact": 3.9,
-      "detail": "VADER moyen +0.13"
+      "subscore": 64.0,
+      "impact": 4.2,
+      "detail": "VADER moyen +0.14"
      },
      {
       "label": "Balance courante",
@@ -13343,8 +13343,8 @@
     ]
    },
    "sentiment": {
-    "compound": 0.13,
-    "n_articles": 40,
+    "compound": 0.14,
+    "n_articles": 39,
     "source": "Google News RSS",
     "headlines": [
      {
@@ -13386,11 +13386,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 63.0,
+    "score": 64.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 63.0
+      "score": 64.0
      }
     ]
    },
@@ -13405,10 +13405,10 @@
      "confidence_adjustment": 0.19,
      "real_interest_rate": 1.5
     },
-    "cagr_10": 4.41,
+    "cagr_10": 4.42,
     "cagr_25": 3.72,
-    "gdp_10": 727.3,
-    "gdp_25": 1177.9,
+    "gdp_10": 727.4,
+    "gdp_25": 1178.0,
     "stability_10": 68.8,
     "stability_25": 67.4,
     "debt_10": 48.6,
@@ -13419,35 +13419,35 @@
       "gdp": 472.2,
       "growth": 5.17,
       "debt": 64.6,
-      "stability": 73.3
+      "stability": 73.6
      },
      {
       "year": 2026,
       "gdp": 496.7,
       "growth": 5.19,
       "debt": 62.3,
-      "stability": 72.6
+      "stability": 72.9
      },
      {
       "year": 2027,
       "gdp": 521.4,
       "growth": 4.97,
       "debt": 60.2,
-      "stability": 71.7
+      "stability": 71.9
      },
      {
       "year": 2028,
       "gdp": 546.3,
       "growth": 4.78,
       "debt": 58.4,
-      "stability": 71.1
+      "stability": 71.2
      },
      {
       "year": 2029,
-      "gdp": 571.4,
+      "gdp": 571.5,
       "growth": 4.6,
       "debt": 56.6,
-      "stability": 70.5
+      "stability": 70.6
      },
      {
       "year": 2030,
@@ -13461,18 +13461,18 @@
       "gdp": 622.4,
       "growth": 4.29,
       "debt": 53.6,
-      "stability": 69.7
+      "stability": 69.8
      },
      {
       "year": 2032,
-      "gdp": 648.2,
+      "gdp": 648.3,
       "growth": 4.15,
       "debt": 52.2,
-      "stability": 69.4
+      "stability": 69.5
      },
      {
       "year": 2033,
-      "gdp": 674.3,
+      "gdp": 674.4,
       "growth": 4.03,
       "debt": 50.9,
       "stability": 69.2
@@ -13481,117 +13481,117 @@
       "year": 2034,
       "gdp": 700.7,
       "growth": 3.91,
-      "debt": 49.8,
+      "debt": 49.7,
       "stability": 69.0
      },
      {
       "year": 2035,
-      "gdp": 727.3,
+      "gdp": 727.4,
       "growth": 3.81,
       "debt": 48.6,
       "stability": 68.8
      },
      {
       "year": 2036,
-      "gdp": 754.3,
+      "gdp": 754.4,
       "growth": 3.71,
       "debt": 47.6,
       "stability": 68.6
      },
      {
       "year": 2037,
-      "gdp": 781.6,
+      "gdp": 781.7,
       "growth": 3.62,
       "debt": 46.6,
       "stability": 68.5
      },
      {
       "year": 2038,
-      "gdp": 809.3,
+      "gdp": 809.4,
       "growth": 3.54,
       "debt": 45.7,
       "stability": 68.3
      },
      {
       "year": 2039,
-      "gdp": 837.3,
+      "gdp": 837.4,
       "growth": 3.47,
       "debt": 44.8,
       "stability": 68.2
      },
      {
       "year": 2040,
-      "gdp": 865.8,
+      "gdp": 865.9,
       "growth": 3.4,
       "debt": 44.0,
       "stability": 68.1
      },
      {
       "year": 2041,
-      "gdp": 894.7,
+      "gdp": 894.8,
       "growth": 3.34,
       "debt": 43.2,
       "stability": 68.0
      },
      {
       "year": 2042,
-      "gdp": 924.0,
+      "gdp": 924.1,
       "growth": 3.28,
       "debt": 42.5,
       "stability": 67.9
      },
      {
       "year": 2043,
-      "gdp": 953.8,
+      "gdp": 953.9,
       "growth": 3.23,
       "debt": 41.8,
       "stability": 67.8
      },
      {
       "year": 2044,
-      "gdp": 984.1,
+      "gdp": 984.2,
       "growth": 3.18,
       "debt": 41.1,
       "stability": 67.7
      },
      {
       "year": 2045,
-      "gdp": 1014.9,
+      "gdp": 1015.1,
       "growth": 3.13,
       "debt": 40.5,
       "stability": 67.7
      },
      {
       "year": 2046,
-      "gdp": 1046.3,
+      "gdp": 1046.4,
       "growth": 3.09,
       "debt": 39.8,
       "stability": 67.6
      },
      {
       "year": 2047,
-      "gdp": 1078.2,
+      "gdp": 1078.4,
       "growth": 3.05,
       "debt": 39.2,
       "stability": 67.5
      },
      {
       "year": 2048,
-      "gdp": 1110.8,
+      "gdp": 1111.0,
       "growth": 3.02,
-      "debt": 38.7,
+      "debt": 38.6,
       "stability": 67.5
      },
      {
       "year": 2049,
-      "gdp": 1144.0,
+      "gdp": 1144.2,
       "growth": 2.99,
       "debt": 38.1,
       "stability": 67.4
      },
      {
       "year": 2050,
-      "gdp": 1177.9,
+      "gdp": 1178.0,
       "growth": 2.96,
       "debt": 37.6,
       "stability": 67.4
@@ -13677,19 +13677,19 @@
     }
    },
    "confidence": {
-    "score": 54.9,
+    "score": 55.5,
     "label": "Neutre",
     "components": {
      "macro": 59.9,
      "fiscal": 54.0,
-     "sentiment": 49.0
+     "sentiment": 51.0
     },
     "subscores": {
      "growth": 60.4,
      "inflation": 59.2,
      "debt": 68.0,
      "current_account": 33.1,
-     "sentiment": 49.0
+     "sentiment": 51.0
     },
     "factors": [
      {
@@ -13716,9 +13716,9 @@
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 49.0,
-      "impact": -0.3,
-      "detail": "VADER moyen -0.01"
+      "subscore": 51.0,
+      "impact": 0.3,
+      "detail": "VADER moyen +0.01"
      },
      {
       "label": "Balance courante",
@@ -13730,7 +13730,7 @@
     ]
    },
    "sentiment": {
-    "compound": -0.01,
+    "compound": 0.01,
     "n_articles": 40,
     "source": "Google News RSS",
     "headlines": [
@@ -13773,11 +13773,11 @@
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 49.0,
+    "score": 51.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 49.0
+      "score": 51.0
      }
     ]
    },
@@ -13792,195 +13792,195 @@
      "confidence_adjustment": 0.04,
      "real_interest_rate": 1.5
     },
-    "cagr_10": 3.73,
-    "cagr_25": 3.19,
-    "gdp_10": 659.9,
-    "gdp_25": 1004.0,
+    "cagr_10": 3.74,
+    "cagr_25": 3.2,
+    "gdp_10": 660.1,
+    "gdp_25": 1004.3,
     "stability_10": 63.3,
     "stability_25": 65.0,
     "debt_10": 57.3,
-    "debt_25": 47.1,
+    "debt_25": 47.0,
     "series": [
      {
       "year": 2025,
       "gdp": 457.4,
       "growth": 2.64,
       "debt": 71.2,
-      "stability": 54.9
+      "stability": 55.5
      },
      {
       "year": 2026,
       "gdp": 477.2,
-      "growth": 4.32,
+      "growth": 4.33,
       "debt": 69.3,
-      "stability": 58.4
+      "stability": 58.9
      },
      {
       "year": 2027,
       "gdp": 497.1,
-      "growth": 4.16,
+      "growth": 4.17,
       "debt": 67.5,
-      "stability": 59.3
+      "stability": 59.6
      },
      {
       "year": 2028,
-      "gdp": 517.0,
-      "growth": 4.01,
+      "gdp": 517.1,
+      "growth": 4.02,
       "debt": 65.9,
-      "stability": 60.1
+      "stability": 60.3
      },
      {
       "year": 2029,
       "gdp": 537.1,
       "growth": 3.88,
       "debt": 64.4,
-      "stability": 60.7
+      "stability": 60.9
      },
      {
       "year": 2030,
-      "gdp": 557.2,
+      "gdp": 557.3,
       "growth": 3.75,
       "debt": 63.0,
-      "stability": 61.3
+      "stability": 61.5
      },
      {
       "year": 2031,
-      "gdp": 577.5,
+      "gdp": 577.6,
       "growth": 3.64,
       "debt": 61.7,
-      "stability": 61.8
+      "stability": 61.9
      },
      {
       "year": 2032,
-      "gdp": 597.9,
+      "gdp": 598.0,
       "growth": 3.53,
-      "debt": 60.5,
-      "stability": 62.3
+      "debt": 60.4,
+      "stability": 62.4
      },
      {
       "year": 2033,
-      "gdp": 618.4,
-      "growth": 3.43,
+      "gdp": 618.5,
+      "growth": 3.44,
       "debt": 59.3,
       "stability": 62.7
      },
      {
       "year": 2034,
-      "gdp": 639.1,
+      "gdp": 639.2,
       "growth": 3.35,
       "debt": 58.3,
       "stability": 63.0
      },
      {
       "year": 2035,
-      "gdp": 659.9,
+      "gdp": 660.1,
       "growth": 3.26,
       "debt": 57.3,
       "stability": 63.3
      },
      {
       "year": 2036,
-      "gdp": 681.0,
+      "gdp": 681.1,
       "growth": 3.19,
       "debt": 56.3,
-      "stability": 63.5
+      "stability": 63.6
      },
      {
       "year": 2037,
-      "gdp": 702.2,
+      "gdp": 702.4,
       "growth": 3.12,
       "debt": 55.4,
       "stability": 63.8
      },
      {
       "year": 2038,
-      "gdp": 723.7,
-      "growth": 3.05,
+      "gdp": 723.8,
+      "growth": 3.06,
       "debt": 54.6,
       "stability": 63.9
      },
      {
       "year": 2039,
-      "gdp": 745.3,
+      "gdp": 745.5,
       "growth": 3.0,
       "debt": 53.8,
       "stability": 64.1
      },
      {
       "year": 2040,
-      "gdp": 767.3,
+      "gdp": 767.5,
       "growth": 2.94,
       "debt": 53.1,
       "stability": 64.2
      },
      {
       "year": 2041,
-      "gdp": 789.5,
+      "gdp": 789.7,
       "growth": 2.89,
       "debt": 52.3,
       "stability": 64.4
      },
      {
       "year": 2042,
-      "gdp": 811.9,
+      "gdp": 812.2,
       "growth": 2.85,
-      "debt": 51.7,
+      "debt": 51.6,
       "stability": 64.5
      },
      {
       "year": 2043,
-      "gdp": 834.7,
-      "growth": 2.8,
+      "gdp": 834.9,
+      "growth": 2.81,
       "debt": 51.0,
       "stability": 64.5
      },
      {
       "year": 2044,
-      "gdp": 857.8,
+      "gdp": 858.0,
       "growth": 2.77,
       "debt": 50.4,
       "stability": 64.6
      },
      {
       "year": 2045,
-      "gdp": 881.2,
+      "gdp": 881.5,
       "growth": 2.73,
       "debt": 49.8,
       "stability": 64.7
      },
      {
       "year": 2046,
-      "gdp": 905.0,
+      "gdp": 905.3,
       "growth": 2.7,
       "debt": 49.2,
       "stability": 64.8
      },
      {
       "year": 2047,
-      "gdp": 929.2,
+      "gdp": 929.4,
       "growth": 2.67,
       "debt": 48.6,
       "stability": 64.8
      },
      {
       "year": 2048,
-      "gdp": 953.7,
+      "gdp": 954.0,
       "growth": 2.64,
       "debt": 48.1,
       "stability": 64.9
      },
      {
       "year": 2049,
-      "gdp": 978.6,
+      "gdp": 978.9,
       "growth": 2.62,
       "debt": 47.6,
       "stability": 64.9
      },
      {
       "year": 2050,
-      "gdp": 1004.0,
+      "gdp": 1004.3,
       "growth": 2.59,
-      "debt": 47.1,
+      "debt": 47.0,
       "stability": 65.0
      }
     ]
@@ -14064,19 +14064,19 @@
     }
    },
    "confidence": {
-    "score": 53.1,
+    "score": 53.4,
     "label": "Neutre",
     "components": {
      "macro": 57.7,
      "fiscal": 53.1,
-     "sentiment": 47.0
+     "sentiment": 48.0
     },
     "subscores": {
      "growth": 38.0,
      "inflation": 81.8,
      "debt": 57.2,
      "current_account": 47.0,
-     "sentiment": 47.0
+     "sentiment": 48.0
     },
     "factors": [
      {
@@ -14103,9 +14103,9 @@
      {
       "label": "Sentiment de l'actualité",
       "weight": 0.3,
-      "subscore": 47.0,
-      "impact": -0.9,
-      "detail": "VADER moyen -0.03"
+      "subscore": 48.0,
+      "impact": -0.6,
+      "detail": "VADER moyen -0.02"
      },
      {
       "label": "Croissance du PIB",
@@ -14117,7 +14117,7 @@
     ]
    },
    "sentiment": {
-    "compound": -0.03,
+    "compound": -0.02,
     "n_articles": 40,
     "source": "Google News RSS",
     "headlines": [
@@ -14126,12 +14126,6 @@
       "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxPNjBucEhaU0liTDA4VkxqeTdjN0duY0xTUEtqdG91cWw0UWVFNHpSZm55dWpTcWpYTlNIMEs0M1ozZVFDRXY0a01SNFJjZU9NV2luUlRiOTJ5YmZueWJVcGtWSEdZUnE2M1N4dFdHMjBvZjJvcnNUNDUwcWFsYkpDdGdTcFVLSXlsdmVyU2lKYUVaMDhVczNhWWV5Z0drMHJfOGNSc2tIWlFnaWQ5cTc1UlVaRzJyRUNzVktKaEloQVZ4cVZyXzkxZzV2R3Rpdk0?oc=5",
       "source": "Business Insider Africa",
       "compound": -0.85
-     },
-     {
-      "title": "South Africa’s largest telecom wanted control of Safaricom; now a Kenyan court battle threatens the deal",
-      "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOdnhGVWFSQkdmbVFXZTJzcU9LaXJzRDJTUEpiS3h0V3MyY3k5QVBkQTI4OGllOTl3dWhxNUhfQnRCMnBzNE9ORVc1clpLcEJwS0pHNDIwWDVGaktRREJRd1FZdjVjRjFMWExUQVN4OXhLUzFZRlp3OExXOF8yTzdqTFowRUYzQVJBY2NEWTBYM0J3aVpjYTNIMFdwVTk0clRjbThFY2Y3dUlfdWEtR0EtOXdHOGUwZFNsTVdvQ21mWVIwZEpjZkdEV09lbkhIYTZsYmRLNEg3dw?oc=5",
-      "source": "Business Insider Africa",
-      "compound": -0.64
      },
      {
       "title": "South Africa’s biggest insurer buying freedom for R20.7 billion",
@@ -14156,15 +14150,21 @@
       "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQMjYtV3lRckFkRWxJalF0Qk9XeVZzaDUtbHljUGFfXzhFQTBudHU5ZDJwYnlBODVhZHJrXzNsV0RzdmtrcGlhdUVJU1lPT0RFek5IOU45ZFBxS01zWWo5RE1zUzZGZGZIbW1QUzRQeVFUeXlpd29QX1pCb2FycS1TUFU3ZmluVVE3WmF4aW9ZbjVRYjlUdDJ1MzFZQ0Jqdmt6c1NSRWtISQ?oc=5",
       "source": "NewVision.co.ug",
       "compound": -0.61
+     },
+     {
+      "title": "Severe weather warning tracker for South Africa",
+      "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxQWUs4cHFpcHNCaFhYREtDRW9hWWFXZ3RiTFJGeG9Ranp0eHROTkY4UXRzaXNqMGNvOUd4WUlFV2VXMUZacEJRTFZVQUxCdjZKN1BFSi1hdkRCNmFTU203cElVNWlMNE5uTWREOVBqUXdhNFFJcDhxb1ljRGpGUHd3R0tjSlNiMkFfQ0Q5LUI3VDV1Qmt6ODMwVGJSWFdEYWc?oc=5",
+      "source": "MyBroadband",
+      "compound": -0.61
      }
     ],
     "as_of": "2026-10-18",
     "status": "live",
-    "score": 47.0,
+    "score": 48.0,
     "history": [
      {
       "date": "2026-10-18",
-      "score": 47.0
+      "score": 48.0
      }
     ]
    },
@@ -14176,13 +14176,13 @@
      "growth_ma5": 1.87,
      "long_run_growth": 1.8,
      "debt_drag": -0.0,
-     "confidence_adjustment": 0.02,
+     "confidence_adjustment": 0.03,
      "real_interest_rate": 1.5
     },
     "cagr_10": 1.86,
     "cagr_25": 1.84,
     "gdp_10": 513.8,
-    "gdp_25": 673.7,
+    "gdp_25": 673.8,
     "stability_10": 58.3,
     "stability_25": 59.6,
     "debt_10": 79.9,
@@ -14193,35 +14193,35 @@
       "gdp": 427.2,
       "growth": 1.11,
       "debt": 82.8,
-      "stability": 53.1
+      "stability": 53.4
      },
      {
       "year": 2026,
       "gdp": 435.3,
       "growth": 1.89,
       "debt": 82.4,
-      "stability": 55.1
+      "stability": 55.3
      },
      {
       "year": 2027,
       "gdp": 443.5,
       "growth": 1.88,
       "debt": 82.1,
-      "stability": 55.7
+      "stability": 55.9
      },
      {
       "year": 2028,
       "gdp": 451.8,
       "growth": 1.88,
       "debt": 81.8,
-      "stability": 56.2
+      "stability": 56.4
      },
      {
       "year": 2029,
       "gdp": 460.2,
       "growth": 1.87,
       "debt": 81.5,
-      "stability": 56.7
+      "stability": 56.8
      },
      {
       "year": 2030,
@@ -14239,14 +14239,14 @@
      },
      {
       "year": 2032,
-      "gdp": 486.3,
+      "gdp": 486.4,
       "growth": 1.85,
       "debt": 80.7,
       "stability": 57.7
      },
      {
       "year": 2033,
-      "gdp": 495.3,
+      "gdp": 495.4,
       "growth": 1.85,
       "debt": 80.4,
       "stability": 57.9
@@ -14254,7 +14254,7 @@
      {
       "year": 2034,
       "gdp": 504.5,
-      "growth": 1.84,
+      "growth": 1.85,
       "debt": 80.1,
       "stability": 58.1
      },
@@ -14267,15 +14267,15 @@
      },
      {
       "year": 2036,
-      "gdp": 523.2,
+      "gdp": 523.3,
       "growth": 1.84,
       "debt": 79.6,
       "stability": 58.5
      },
      {
       "year": 2037,
-      "gdp": 532.8,
-      "growth": 1.83,
+      "gdp": 532.9,
+      "growth": 1.84,
       "debt": 79.3,
       "stability": 58.6
      },
@@ -14288,17 +14288,17 @@
      },
      {
       "year": 2039,
-      "gdp": 552.5,
+      "gdp": 552.6,
       "growth": 1.83,
       "debt": 78.8,
-      "stability": 58.8
+      "stability": 58.9
      },
      {
       "year": 2040,
-      "gdp": 562.6,
+      "gdp": 562.7,
       "growth": 1.83,
       "debt": 78.6,
-      "stability": 58.9
+      "stability": 59.0
      },
      {
       "year": 2041,
@@ -14309,63 +14309,63 @@
      },
      {
       "year": 2042,
-      "gdp": 583.3,
+      "gdp": 583.4,
       "growth": 1.82,
       "debt": 78.1,
       "stability": 59.1
      },
      {
       "year": 2043,
-      "gdp": 593.9,
+      "gdp": 594.0,
       "growth": 1.82,
       "debt": 77.8,
       "stability": 59.2
      },
      {
       "year": 2044,
-      "gdp": 604.7,
+      "gdp": 604.8,
       "growth": 1.82,
       "debt": 77.6,
       "stability": 59.3
      },
      {
       "year": 2045,
-      "gdp": 615.7,
+      "gdp": 615.8,
       "growth": 1.82,
       "debt": 77.3,
       "stability": 59.3
      },
      {
       "year": 2046,
-      "gdp": 626.9,
+      "gdp": 627.0,
       "growth": 1.82,
       "debt": 77.1,
       "stability": 59.4
      },
      {
       "year": 2047,
-      "gdp": 638.3,
+      "gdp": 638.4,
       "growth": 1.82,
-      "debt": 76.9,
+      "debt": 76.8,
       "stability": 59.5
      },
      {
       "year": 2048,
-      "gdp": 649.9,
+      "gdp": 650.0,
       "growth": 1.82,
       "debt": 76.6,
       "stability": 59.5
      },
      {
       "year": 2049,
-      "gdp": 661.7,
+      "gdp": 661.8,
       "growth": 1.82,
       "debt": 76.4,
       "stability": 59.6
      },
      {
       "year": 2050,
-      "gdp": 673.7,
+      "gdp": 673.8,
       "growth": 1.81,
       "debt": 76.1,
       "stability": 59.6
