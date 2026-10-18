@@ -282,6 +282,18 @@ export interface MacroMeta {
   };
 }
 
+/** Heavy per-country fields shipped in macro_details.json, fetched after the first render. */
+export interface CountryDetails {
+  series: ProjectionPoint[];
+  headlines: Headline[];
+  sentiment_history: { date: string; score: number }[];
+}
+
+export interface MacroDetails {
+  generated_at: string;
+  countries: Record<string, CountryDetails>;
+}
+
 export interface MacroData {
   meta: MacroMeta;
   countries: Country[];

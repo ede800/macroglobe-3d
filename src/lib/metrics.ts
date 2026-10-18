@@ -1,4 +1,4 @@
-import type { Country, DependencyKey, ExposureAxisKey, FilterKey, MacroData, PoliticalCategory, QuickFilters } from '../types';
+import type { Country, DependencyKey, ExposureAxisKey, FilterKey, MacroData, MacroDetails, PoliticalCategory, QuickFilters } from '../types';
 
 // ---------------------------------------------------------------------------
 // Color ramps (dark surface). Sequential: near-zero recedes toward the dark
@@ -808,9 +808,30 @@ export function normalizeData(data: MacroData): MacroData {
       name_fr: NAME_OVERRIDES[c.iso2.toUpperCase()] ?? (c.name_fr || frenchName(c.iso2, c.name)),
       data_quality: c.data_quality ?? { score: 100, estimated: [], usd_proxies: [] },
       currency: c.currency ?? null,
+      // heavy fields arrive with macro_details.json (older single-file datasets already contain them)
+      projection: { ...c.projection, series: c.projection.series ?? [] },
+      sentiment: { ...c.sentiment, headlines: c.sentiment.headlines ?? [], history: c.sentiment.history ?? [] },
     })),
   };
 }
+
+export function mergeDetails(data: MacroData, details: MacroDetails): MacroData {
+  return {
+    ...data,
+    countries: data.countries.map((c) => {
+      const d = details.countries[c.iso3];
+      if (!d) return c;
+      return {
+        ...c,
+        projection: { ...c.projection, series: d.series },
+        sentiment: { ...c.sentiment, headlines: d.headlines, history: d.sentiment_history },
+      };
+    }),
+  };
+}
+
+/** Charts and headlines are not available until macro_details.json has been merged. */
+export const hasDetails = (c: Country) => c.projection.series.length > 0;
 
 export const INCOME_LABELS: Record<string, string> = {
   HIC: 'Revenu élevé',

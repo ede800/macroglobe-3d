@@ -10,6 +10,8 @@ import {
   Globe2,
   HeartPulse,
   Landmark,
+  Check,
+  Share2,
   Users,
   Vote,
   Network,
@@ -660,6 +662,13 @@ function PopulationChart({ series }: { series: ProjectionPoint[] }) {
 }
 
 function ProjectionCharts({ series }: { series: ProjectionPoint[] }) {
+  if (!series.length) {
+    return (
+      <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-terminal-line text-xs text-terminal-muted">
+        <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-terminal-accent border-t-transparent" /> Chargement des graphiques…
+      </div>
+    );
+  }
   const base = series[0].year;
   const marks = [base + 10, base + 25];
   return (
@@ -775,6 +784,29 @@ function SentimentSpark({ history }: { history: { date: string; score: number }[
   );
 }
 
+function ShareButton({ name }: { name: string }) {
+  const [copied, setCopied] = useState(false);
+  const share = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share && window.matchMedia('(pointer: coarse)').matches) {
+        await navigator.share({ title: `${name} · MacroGlobe 3D`, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // share sheet dismissed or clipboard blocked: nothing to do
+    }
+  };
+  return (
+    <button onClick={share} className="icon-btn -mt-1" aria-label={copied ? 'Lien copié' : `Partager le lien vers ${name}`} title={copied ? 'Lien copié !' : 'Partager ce pays'}>
+      {copied ? <Check size={17} className="text-terminal-up" /> : <Share2 size={16} />}
+    </button>
+  );
+}
+
 function QualityBadge({ country }: { country: Country }) {
   const q = country.data_quality;
   const notes = [...q.estimated, ...q.usd_proxies.map((p) => `${p} (proxy)`)];
@@ -823,6 +855,7 @@ export default function CountrySidebar({ country, compareMode, activeFilter, onC
             <h2 className="truncate text-[22px] font-semibold leading-tight tracking-tight text-terminal-ink">{country.name_fr}</h2>
             <p className="truncate text-xs text-terminal-sub/80">{subtitle}</p>
           </div>
+          <ShareButton name={country.name_fr} />
           <button onClick={onClose} className="icon-btn -mr-1 -mt-1" aria-label="Fermer le panneau">
             <X size={18} />
           </button>
@@ -1083,7 +1116,9 @@ export default function CountrySidebar({ country, compareMode, activeFilter, onC
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-xs text-terminal-muted">Aucun titre économique récent trouvé ; sentiment neutre (50) appliqué.</p>
+              <p className="mt-3 text-xs text-terminal-muted">
+                {sentiment.n_articles > 0 ? 'Chargement des titres…' : 'Aucun titre économique récent trouvé ; sentiment neutre (50) appliqué.'}
+              </p>
             )}
           </Section>
 

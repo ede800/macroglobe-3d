@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   BarChart3,
@@ -15,8 +15,9 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import GlobeView, { type GlobeViewHandle } from './components/GlobeView';
-import CountrySidebar from './components/CountrySidebar';
-import ComparisonModal from './components/ComparisonModal';
+// Panels with charts (Recharts) are loaded on demand: the globe paints first.
+const CountrySidebar = lazy(() => import('./components/CountrySidebar'));
+const ComparisonModal = lazy(() => import('./components/ComparisonModal'));
 import SearchBar from './components/SearchBar';
 import MapLegend from './components/MapLegend';
 import WorldPanel from './components/WorldPanel';
@@ -24,8 +25,8 @@ import Ticker from './components/Ticker';
 import FilterMenu from './components/FilterMenu';
 import QuickFilters from './components/QuickFilters';
 import OnboardingHint from './components/OnboardingHint';
-import type { CountryCollection, FilterKey, MacroData, QuickFilters as QuickFiltersState } from './types';
-import { DEFAULT_QUICK_FILTERS, FILTER_GROUPS, FILTERS, isQuickFilterActive, matchesQuickFilters, normalizeData } from './lib/metrics';
+import type { CountryCollection, FilterKey, MacroData, MacroDetails, QuickFilters as QuickFiltersState } from './types';
+import { DEFAULT_QUICK_FILTERS, FILTER_GROUPS, FILTERS, isQuickFilterActive, matchesQuickFilters, mergeDetails, normalizeData } from './lib/metrics';
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -42,6 +43,12 @@ async function loadJson<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { cache: 'no-cache' });
   if (!res.ok) throw new Error(`${path} : HTTP ${res.status}`);
   return res.json() as Promise<T>;
+}
+
+function PanelSkeleton() {
+  return (
+    <div className="glass-panel fixed inset-x-0 bottom-0 z-30 h-[40vh] animate-pulse rounded-t-2xl md:inset-x-auto md:bottom-14 md:right-4 md:top-[var(--chrome-top)] md:h-auto md:w-[440px] md:rounded-2xl" />
+  );
 }
 
 function LoadingScreen() {
@@ -90,7 +97,13 @@ export default function App() {
 
   useEffect(() => {
     Promise.all([loadJson<MacroData>('data/macro_data.json'), loadJson<CountryCollection>('data/countries.geojson')])
-      .then(([data, geo]) => setState({ status: 'ready', data: normalizeData(data), geo }))
+      .then(([data, geo]) => {
+        setState({ status: 'ready', data: normalizeData(data), geo });
+        // second, heavier file: projection series + headlines, merged as soon as it lands
+        loadJson<MacroDetails>('data/macro_details.json')
+          .then((details) => setState((prev) => (prev.status === 'ready' ? { ...prev, data: mergeDetails(prev.data, details) } : prev)))
+          .catch(() => undefined);
+      })
       .catch((err: unknown) => setState({ status: 'error', message: err instanceof Error ? err.message : String(err) }));
   }, []);
 
@@ -324,6 +337,7 @@ export default function App() {
       </div>
 
       {selected && (
+        <Suspense fallback={<PanelSkeleton />}>
         <CountrySidebar
           key={selected.iso3}
           country={selected}
@@ -333,9 +347,11 @@ export default function App() {
           onClose={closeSidebar}
           onCompare={() => setCompareMode((v) => !v)}
         />
+        </Suspense>
       )}
 
       {selected && compared && (
+        <Suspense fallback={null}>
         <ComparisonModal
           a={selected}
           b={compared}
@@ -346,6 +362,7 @@ export default function App() {
             globeRef.current?.flyTo(compared);
           }}
         />
+        </Suspense>
       )}
 
       {showAbout && (

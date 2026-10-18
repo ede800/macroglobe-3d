@@ -14,7 +14,6 @@ export default defineConfig({
         manualChunks: {
           three: ['three'],
           globe: ['react-globe.gl'],
-          charts: ['recharts'],
         },
       },
     },

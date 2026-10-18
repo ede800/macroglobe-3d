@@ -1613,12 +1613,44 @@ def impute(rows: list[dict[str, Any]]) -> None:
                 r["estimated"].append(FIELD_LABELS[fld])
 
 
+def details_path(output: Path) -> Path:
+    return output.with_name(output.stem.replace("macro_data", "macro_details") + output.suffix)         if "macro_data" in output.stem else output.with_name(output.stem + "_details" + output.suffix)
+
+
+def split_details(data: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Move the heavy per-country fields (charts, headlines) to a second file loaded after first paint."""
+    light = {**data, "countries": []}
+    details: dict[str, Any] = {}
+    for c in data["countries"]:
+        c = json.loads(json.dumps(c))  # deep copy
+        d: dict[str, Any] = {}
+        d["series"] = c["projection"].pop("series", [])
+        d["headlines"] = c["sentiment"].pop("headlines", [])
+        d["sentiment_history"] = c["sentiment"].pop("history", [])
+        if c.get("demography"):
+            c["demography"].pop("population_projection", None)
+        for item in (c.get("dependencies") or {}).get("indicators", {}).values():
+            item.pop("label", None)  # labels live in the UI
+        details[c["iso3"]] = d
+        light["countries"].append(c)
+    return light, {"generated_at": data["meta"]["generated_at"], "countries": details}
+
+
 def load_previous(path: Path) -> dict[str, Any]:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-        return {c["iso3"]: c for c in data.get("countries", [])}
+        countries = {c["iso3"]: c for c in data.get("countries", [])}
     except Exception:  # noqa: BLE001 - missing or corrupt file simply means no cache
         return {}
+    try:  # re-attach the split-off headlines / history so the sentiment cache keeps working
+        details = json.loads(details_path(path).read_text(encoding="utf-8"))["countries"]
+        for iso3, d in details.items():
+            if iso3 in countries:
+                countries[iso3].setdefault("sentiment", {}).setdefault("headlines", d.get("headlines", []))
+                countries[iso3]["sentiment"].setdefault("history", d.get("sentiment_history", []))
+    except Exception:  # noqa: BLE001
+        pass
+    return countries
 
 
 def resolve_sentiment(iso3: str, live: NewsResult | None, previous: dict[str, Any], today: str) -> dict[str, Any]:
@@ -1846,9 +1878,12 @@ def main() -> int:
     data = build_dataset(offline=args.offline, with_news=not args.no_news, output=args.output)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    tmp = args.output.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    tmp.replace(args.output)
+    light, details = split_details(data)
+    for path, payload in ((details_path(args.output), details), (args.output, light)):
+        tmp = path.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        tmp.replace(path)
+    log(f"Wrote {details_path(args.output).name} ({details_path(args.output).stat().st_size / 1024:.0f} KB)")
     status = data["meta"]["status"]
     log(f"Wrote {args.output} ({args.output.stat().st_size / 1024:.0f} KB, {len(data['countries'])} countries, "
         f"WB: {status['world_bank']}, IMF: {status['imf']}, news: {status['news']})")
