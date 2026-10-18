@@ -36,7 +36,13 @@ jobs:
       - name: Refresh macro data (World Bank + news sentiment)
         # The script falls back to cached/seed data on any network error, so it
         # always writes a valid file. If it crashes outright, keep yesterday's file.
-        run: python scripts/update_macro_data.py || echo "::warning::Pipeline failed, keeping the previous macro_data.json"
+        run: |
+          python scripts/update_macro_data.py || echo "::warning::Pipeline failed, keeping the previous data files"
+          # never publish inconsistent data: fall back to yesterday's committed files
+          if ! python scripts/validate_data.py; then
+            echo "::warning::Data validation failed, restoring the previous data files"
+            git checkout -- public/data/macro_data.json public/data/macro_details.json
+          fi
 
       - name: Commit updated data
         run: |

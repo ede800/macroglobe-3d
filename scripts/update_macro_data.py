@@ -1807,7 +1807,13 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
 
     rows: list[dict[str, Any]] = []
     reused: list[dict[str, Any]] = []
+    # Without any live macro source (offline run or World Bank + IMF both down), yesterday's full entries are
+    # better than rebuilding the 40 reference economies from the static 2024 seed.
+    no_live_source = not wb and not imf
     for iso3, meta in universe.items():
+        if no_live_source and iso3 in previous:
+            reused.append(previous[iso3])
+            continue
         gathered = gather_indicators(iso3, wb.get(iso3, {}), imf.get(iso3, {}))
         if gathered is None:
             if iso3 in previous:
@@ -1829,7 +1835,8 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
             log(f"IMF DOT via DBnomics FAILED ({exc})")
             dot_status = "indisponible"
         owid = fetch_all_owid()
-        owid_status = f"ok ({sum(1 for v in owid.values() if v)}/{len(OWID_SERIES)} séries)"
+        n_owid = sum(1 for v in owid.values() if v)
+        owid_status = f"ok ({n_owid}/{len(OWID_SERIES)} séries)" if n_owid else "indisponible"
         try:
             politics = fetch_politics({r["meta"]["iso3"] for r in rows})
             politics_status = f"ok ({len(politics)} pays)"
@@ -1856,7 +1863,12 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
         c["gdp_rank"] = rank
 
     n_wb = sum(1 for r in rows if any(s.startswith("World Bank") for s in r["sources"].values()))
-    wb_status = f"ok ({n_wb}/{len(countries)} pays)" if n_wb else ("offline" if offline else "fallback (référence)")
+    if n_wb:
+        wb_status = f"ok ({n_wb}/{len(countries)} pays)"
+    elif no_live_source and reused:
+        wb_status = "cache (données de la veille)"
+    else:
+        wb_status = "offline" if offline else "fallback (référence)"
 
     return {
         "meta": {

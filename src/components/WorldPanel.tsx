@@ -26,7 +26,8 @@ export default function WorldPanel({ countries, onSelect }: WorldPanelProps) {
       weighted,
       split,
       best: bySentiment.slice(0, 3),
-      worst: bySentiment.slice(-3).reverse(),
+      // never list a country on both sides when few countries have news
+      worst: bySentiment.slice(Math.max(3, bySentiment.length - 3)).reverse(),
       live: countries.filter((c) => c.sentiment.status === 'live').length,
     };
   }, [countries]);

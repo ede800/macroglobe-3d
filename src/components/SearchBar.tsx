@@ -9,6 +9,7 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
+// strip accents: "Égypte" matches "egy"
 const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 export default function SearchBar({ countries, onSelect, placeholder = 'Rechercher un pays…' }: SearchBarProps) {

@@ -872,6 +872,11 @@ export default function CountrySidebar({ country, compareMode, activeFilter, onC
           <div className="flex flex-col items-end gap-1.5">
             <ToneBadge score={confidence.score} label={confidence.label} />
             <QualityBadge country={country} />
+            {country.stale && (
+              <span className="rounded-full border border-terminal-accent/40 bg-terminal-accent/10 px-2 py-0.5 text-[11px] text-terminal-accent" title="Sources indisponibles lors de la dernière mise à jour">
+                Données de la veille
+              </span>
+            )}
           </div>
         </div>
 

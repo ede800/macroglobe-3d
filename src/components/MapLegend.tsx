@@ -116,20 +116,29 @@ export default function MapLegend({ filter, countries, onSelect }: MapLegendProp
                 <RankRow key={c.iso3} c={c} rank={i + 1} filter={filter} onSelect={onSelect} />
               ))}
             </ol>
+          ) : ranked.length === 0 ? (
+            <p className="mt-2 text-center text-[11px] text-terminal-muted">Aucun pays ne correspond.</p>
           ) : (
+            // top 5 … bottom 3; short lists (e.g. after quick filters) are shown whole, without overlap
             <ol className="mt-1.5 space-y-0.5">
-              {ranked.slice(0, 5).map((c, i) => (
+              {(ranked.length <= 8 ? ranked : ranked.slice(0, 5)).map((c, i) => (
                 <RankRow key={c.iso3} c={c} rank={i + 1} filter={filter} onSelect={onSelect} />
               ))}
-              <li className="py-0.5 text-center text-terminal-muted">⋯</li>
-              {ranked
-                .slice(-3)
-                .map((c, i) => <RankRow key={c.iso3} c={c} rank={ranked.length - 2 + i} filter={filter} onSelect={onSelect} />)}
+              {ranked.length > 8 && (
+                <>
+                  <li className="py-0.5 text-center text-terminal-muted">⋯</li>
+                  {ranked.slice(-3).map((c, i) => (
+                    <RankRow key={c.iso3} c={c} rank={ranked.length - 2 + i} filter={filter} onSelect={onSelect} />
+                  ))}
+                </>
+              )}
             </ol>
           )}
-          <button onClick={() => setExpanded((v) => !v)} className="mt-1.5 w-full rounded-md py-1 text-[11px] text-terminal-accent hover:bg-white/[0.05]">
-            {expanded ? 'Réduire' : `Voir les ${ranked.length} pays`}
-          </button>
+          {ranked.length > 8 && (
+            <button onClick={() => setExpanded((v) => !v)} className="mt-1.5 w-full rounded-md py-1 text-[11px] text-terminal-accent hover:bg-white/[0.05]">
+              {expanded ? 'Réduire' : `Voir les ${ranked.length} pays`}
+            </button>
+          )}
         </>
       )}
     </div>
