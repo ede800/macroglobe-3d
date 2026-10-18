@@ -31,13 +31,15 @@ export default function MapLegend({ filter, countries, onSelect }: MapLegendProp
   const [expanded, setExpanded] = useState(false);
   const def = FILTERS[filter];
 
-  const ranked = useMemo(() => [...countries].sort((a, b) => def.value(b) - def.value(a)), [countries, def]);
+  const withData = useMemo(() => countries.filter((c) => def.available(c)), [countries, def]);
+  const ranked = useMemo(() => [...withData].sort((a, b) => def.value(b) - def.value(a)), [withData, def]);
+  const missing = countries.length - withData.length;
 
   const bins = useMemo(() => {
     const counts = new Array<number>(BINS).fill(0);
-    for (const c of countries) counts[Math.min(BINS - 1, Math.floor(def.position(c) * BINS))] += 1;
+    for (const c of withData) counts[Math.min(BINS - 1, Math.floor(def.position(c) * BINS))] += 1;
     return counts;
-  }, [countries, def]);
+  }, [withData, def]);
   const maxBin = Math.max(1, ...bins);
 
   return (
@@ -45,7 +47,7 @@ export default function MapLegend({ filter, countries, onSelect }: MapLegendProp
       <div className="font-semibold text-terminal-ink">{def.label}</div>
       <p className="mt-0.5 text-[11px] leading-snug text-terminal-muted">{def.description}</p>
 
-      <div className="mt-3 flex h-10 items-end gap-[2px]" role="img" aria-label={`Répartition des ${countries.length} pays sur l’échelle`}>
+      <div className="mt-3 flex h-10 items-end gap-[2px]" role="img" aria-label={`Répartition des ${ranked.length} pays sur l’échelle`}>
         {bins.map((n, i) => (
           <div
             key={i}
@@ -67,7 +69,14 @@ export default function MapLegend({ filter, countries, onSelect }: MapLegendProp
           </span>
         ))}
       </div>
-      <div className="text-[10px] text-terminal-muted">{def.legend.caption}</div>
+      <div className="flex items-center justify-between gap-2 text-[10px] text-terminal-muted">
+        <span>{def.legend.caption}</span>
+        {missing > 0 && (
+          <span className="flex shrink-0 items-center gap-1" title="Pays sans donnée publiée pour cet indicateur">
+            <span className="h-2 w-2 rounded-sm bg-[#2a2f38] ring-1 ring-white/15" /> {missing} n.d.
+          </span>
+        )}
+      </div>
 
       <button
         onClick={() => setShowRanking((v) => !v)}
@@ -75,7 +84,7 @@ export default function MapLegend({ filter, countries, onSelect }: MapLegendProp
         aria-expanded={showRanking}
       >
         <span className="flex items-center gap-1.5">
-          <ListOrdered size={13} /> Classement · {countries.length} pays
+          <ListOrdered size={13} /> Classement · {ranked.length} pays
         </span>
         {showRanking ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
       </button>
@@ -99,7 +108,7 @@ export default function MapLegend({ filter, countries, onSelect }: MapLegendProp
             </ol>
           )}
           <button onClick={() => setExpanded((v) => !v)} className="mt-1.5 w-full rounded-md py-1 text-[11px] text-terminal-accent hover:bg-white/[0.05]">
-            {expanded ? 'Réduire' : `Voir les ${countries.length} pays`}
+            {expanded ? 'Réduire' : `Voir les ${ranked.length} pays`}
           </button>
         </>
       )}

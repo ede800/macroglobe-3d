@@ -110,6 +110,18 @@ WB_INDICATORS = {
     "TX.VAL.MMTL.ZS.UN": ("x_metals", 5),
     "TX.VAL.FOOD.ZS.UN": ("x_food", 5),
     "TX.VAL.AGRI.ZS.UN": ("x_agri", 5),
+    # structural dependencies
+    "EG.IMP.CONS.ZS": ("energy_net_imports", 5),
+    "TM.VAL.FUEL.ZS.UN": ("fuel_imports", 5),
+    "TM.VAL.FOOD.ZS.UN": ("food_imports", 5),
+    "BX.TRF.PWKR.DT.GD.ZS": ("remittances", 4),
+    "DT.ODA.ODAT.GN.ZS": ("aid", 5),
+    "NY.GDP.TOTL.RT.ZS": ("resource_rents", 7),
+    "NE.TRD.GNFS.ZS": ("trade_openness", 4),
+    "BX.KLT.DINV.WD.GD.ZS": ("fdi", 4),
+    "DT.DOD.DECT.GN.ZS": ("external_debt", 4),
+    "DT.TDS.DECT.EX.ZS": ("debt_service", 4),
+    "FI.RES.TOTL.MO": ("reserves_months", 4),
 }
 
 # Finance-specific additions to the VADER lexicon (VADER is tuned for social media).
@@ -513,6 +525,133 @@ def fetch_imf_weo() -> tuple[dict[str, dict[str, Series]], str | None]:
         if growth:
             fields["pop_growth"] = sorted(growth, reverse=True)
     return out, vintage
+
+
+# ---------------------------------------------------------------------------
+# Structural dependencies: trade partners (IMF DOTS) + World Bank exposure indicators
+# ---------------------------------------------------------------------------
+
+DOT_PARTNERS = {"CN": "china", "US": "us", "B0": "eu", "W00": "world"}
+DOT_FLOWS = {"TXG_FOB_USD": "exports", "TMG_CIF_USD": "imports"}
+
+# field -> (World Bank field name, label) ; values are fetched through WB_INDICATORS
+DEPENDENCY_FIELDS = {
+    "energy_net_imports": "Importations nettes d'énergie (% de la consommation)",
+    "fuel_imports": "Carburants (% des importations de biens)",
+    "food_imports": "Alimentation (% des importations de biens)",
+    "remittances": "Envois de fonds des diasporas (% du PIB)",
+    "aid": "Aide publique au développement reçue (% du RNB)",
+    "resource_rents": "Rentes des ressources naturelles (% du PIB)",
+    "trade_openness": "Commerce extérieur (% du PIB)",
+    "fdi": "Investissements directs étrangers entrants (% du PIB)",
+    "external_debt": "Dette extérieure (% du RNB)",
+    "debt_service": "Service de la dette extérieure (% des exportations)",
+    "reserves_months": "Réserves de change (mois d'importations)",
+}
+
+# Radar axes: (key, label, raw -> 0-100 intensity)
+EXPOSURE_AXES = [
+    ("china", "Chine", lambda v: v / 40.0 * 100.0),
+    ("us", "États-Unis", lambda v: v / 40.0 * 100.0),
+    ("energy", "Énergie", lambda v: v),
+    ("food", "Alimentation", lambda v: v / 30.0 * 100.0),
+    ("remittances", "Diaspora", lambda v: v / 20.0 * 100.0),
+    ("aid", "Aide", lambda v: v / 15.0 * 100.0),
+    ("commodities", "Mat. premières", lambda v: v * 100.0),
+    ("tourism", "Tourisme", lambda v: v / 50.0 * 100.0),
+    ("usd", "Dollar US", lambda v: v),
+    ("external_debt", "Dette ext.", lambda v: v / 120.0 * 100.0),
+]
+
+
+def fetch_dot(iso2_to_iso3: dict[str, str]) -> dict[str, dict[str, dict[str, dict[int, float]]]]:
+    """{iso3: {flow: {partner: {year: value}}}} from the IMF Direction of Trade Statistics."""
+    out: dict[str, dict[str, dict[str, dict[int, float]]]] = {}
+    for indicator, flow in DOT_FLOWS.items():
+        for code, partner in DOT_PARTNERS.items():
+            try:
+                resp = http_get(f"{DBNOMICS}/series/IMF/DOT", params={
+                    "dimensions": json.dumps({"FREQ": ["A"], "INDICATOR": [indicator], "COUNTERPART_AREA": [code]}),
+                    "observations": "1", "limit": "1000"})
+                docs = resp.json()["series"]["docs"]
+            except Exception as exc:  # noqa: BLE001
+                log(f"IMF DOT {indicator}/{code} FAILED ({exc})")
+                continue
+            for s in docs:
+                iso3 = iso2_to_iso3.get(s["series_code"].split(".")[1])
+                if not iso3:
+                    continue
+                values = {int(p[:4]): float(v) for p, v in zip(s.get("period", []), s.get("value", []))
+                          if v not in ("NA", None) and str(p)[:4].isdigit()}
+                if values:
+                    out.setdefault(iso3, {}).setdefault(flow, {})[partner] = values
+        log(f"IMF DOT {indicator:<12} -> {sum(1 for v in out.values() if flow in v)} pays")
+    return out
+
+
+def compute_partners(iso3: str, dot: dict[str, dict[str, dict[int, float]]]) -> dict[str, Any] | None:
+    """Share of total goods trade (exports + imports) with China, the US and the EU, latest common year."""
+    if not dot:
+        return None
+    world_x = dot.get("exports", {}).get("world", {})
+    world_m = dot.get("imports", {}).get("world", {})
+    min_year = datetime.now(timezone.utc).year - 4
+    years = sorted((y for y in world_x if y in world_m and y >= min_year and world_x[y] + world_m[y] > 0), reverse=True)
+    if not years:
+        return None
+    y = years[0]
+    out: dict[str, Any] = {"year": y, "source": f"FMI DOTS {y}"}
+    own = {"CHN": "china", "USA": "us"}.get(iso3)
+    for partner in ("china", "us", "eu"):
+        if partner == own:
+            out[partner] = None
+            continue
+        x = dot.get("exports", {}).get(partner, {}).get(y, 0.0)
+        m = dot.get("imports", {}).get(partner, {}).get(y, 0.0)
+        out[partner] = {
+            "share": r1((x + m) / (world_x[y] + world_m[y]) * 100.0),
+            "exports": r1(x / world_x[y] * 100.0) if world_x[y] else None,
+            "imports": r1(m / world_m[y] * 100.0) if world_m[y] else None,
+        }
+    return out
+
+
+def compute_dependencies(wb: dict[str, Series], dot: dict[str, Any], iso3: str, ind: dict[str, Any],
+                         usd_score: float, income: str | None) -> dict[str, Any]:
+    ages = {fld: age for fld, age in WB_INDICATORS.values()}
+    indicators: dict[str, Any] = {}
+    for fld, label in DEPENDENCY_FIELDS.items():
+        got = pick_fresh(wb.get(fld), ages[fld])
+        indicators[fld] = {"label": label, "value": r2(got[1]) if got else None, "source": f"World Bank {got[0]}" if got else None}
+    partners = compute_partners(iso3, dot)
+
+    def raw(key: str) -> float | None:
+        if key in ("china", "us"):
+            p = partners.get(key) if partners else None
+            return p["share"] if p else None
+        if key == "energy":
+            v = indicators["energy_net_imports"]["value"]
+            if v is None and indicators["fuel_imports"]["value"] is not None:
+                return indicators["fuel_imports"]["value"] / 30.0 * 100.0  # proxy when the energy balance is missing
+            return v
+        return {
+            "food": indicators["food_imports"]["value"],
+            "remittances": indicators["remittances"]["value"],
+            # high-income economies are not ODA recipients: no series means no aid, not missing data
+            "aid": indicators["aid"]["value"] if indicators["aid"]["value"] is not None else (0.0 if income == "HIC" else None),
+            "commodities": ind["commo"],
+            "tourism": ind["tourism_exports_pct"],
+            "usd": usd_score,
+            "external_debt": indicators["external_debt"]["value"],
+        }[key]
+
+    axes = []
+    for key, label, scale in EXPOSURE_AXES:
+        v = raw(key)
+        axes.append({"key": key, "label": label, "value": r1(clamp(scale(v))) if v is not None else None})
+    available = [a["value"] for a in axes if a["value"] is not None]
+    exposure = r1(sum(available) / len(available)) if len(available) >= 5 else None
+    return {"indicators": indicators, "partners": partners, "exposure": {"score": exposure, "axes": axes}}
 
 
 def pick_fresh(series: Series | None, max_age: int) -> tuple[int, float] | None:
@@ -1015,7 +1154,8 @@ def resolve_sentiment(iso3: str, live: NewsResult | None, previous: dict[str, An
     return sent
 
 
-def finalize(row: dict[str, Any], sentiment: dict[str, Any], centroids: dict[str, tuple[float, float]]) -> dict[str, Any]:
+def finalize(row: dict[str, Any], sentiment: dict[str, Any], centroids: dict[str, tuple[float, float]],
+             dot: dict[str, Any]) -> dict[str, Any]:
     meta, ind, sources = row["meta"], row["ind"], row["sources"]
     iso3 = meta["iso3"]
     seed = SEED_BY_ISO.get(iso3)
@@ -1023,6 +1163,7 @@ def finalize(row: dict[str, Any], sentiment: dict[str, Any], centroids: dict[str
     confidence = compute_confidence(ind, sentiment["compound"])
     profile, usd_proxies = usd_profile(iso3, meta["region_id"] or "", meta["income"] or "", ind["commo"])
     usd = compute_usd_dependence(profile, ind)
+    dependencies = compute_dependencies(row.get("wb", {}), dot, iso3, ind, usd["score"], meta.get("income"))
     projection = compute_projection(ind, confidence["score"], sentiment["compound"], row["base_year"])
 
     if seed:
@@ -1059,6 +1200,7 @@ def finalize(row: dict[str, Any], sentiment: dict[str, Any], centroids: dict[str
             "usd_proxies": usd_proxies,
         },
         "usd": usd,
+        "dependencies": dependencies,
         "confidence": confidence,
         "sentiment": sentiment,
         "projection": projection,
@@ -1074,7 +1216,8 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
     wb: dict[str, dict[str, Series]] = {}
     imf: dict[str, dict[str, Series]] = {}
     vintage: str | None = None
-    imf_status = news_status = "offline"
+    imf_status = news_status = dot_status = "offline"
+    dot: dict[str, Any] = {}
 
     if not offline:
         try:
@@ -1102,11 +1245,20 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
                 reused.append(previous[iso3])
             continue
         ind, sources, base_year = gathered
-        rows.append({"meta": meta, "ind": ind, "sources": sources, "base_year": base_year, "estimated": []})
+        rows.append({"meta": meta, "ind": ind, "sources": sources, "base_year": base_year, "estimated": [],
+                     "wb": wb.get(iso3, {})})
     for iso3, prev in previous.items():  # keep countries we could not rebuild this run (e.g. offline mode)
         if iso3 not in universe:
             reused.append(prev)
     impute(rows)
+
+    if not offline:
+        try:
+            dot = fetch_dot({m["iso2"]: iso3 for iso3, m in universe.items() if m.get("iso2")})
+            dot_status = f"ok ({len(dot)} pays)" if dot else "indisponible"
+        except Exception as exc:  # noqa: BLE001
+            log(f"IMF DOT via DBnomics FAILED ({exc})")
+            dot_status = "indisponible"
 
     news: dict[str, NewsResult] = {}
     if not offline and with_news:
@@ -1117,7 +1269,8 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
         news_status = "désactivé (cache)"
 
     centroids = load_geo_centroids()
-    countries = [finalize(r, resolve_sentiment(r["meta"]["iso3"], news.get(r["meta"]["iso3"]), previous, today), centroids)
+    countries = [finalize(r, resolve_sentiment(r["meta"]["iso3"], news.get(r["meta"]["iso3"]), previous, today), centroids,
+                          dot.get(r["meta"]["iso3"], {}))
                  for r in rows]
     countries += [{**c, "stale": True} for c in reused]
     countries.sort(key=lambda c: c["indicators"]["gdp_usd"], reverse=True)
@@ -1132,12 +1285,13 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
             "schema_version": SCHEMA_VERSION,
             "generated_at": now.isoformat(timespec="seconds"),
             "mode": "offline" if offline else "online",
-            "status": {"world_bank": wb_status, "imf": imf_status, "news": news_status},
+            "status": {"world_bank": wb_status, "imf": imf_status, "trade": dot_status, "news": news_status},
             "country_count": len(countries),
             "imf_vintage": vintage,
             "sources": [
                 {"name": "World Bank Open Data API", "url": "https://api.worldbank.org/v2"},
                 {"name": "FMI — World Economic Outlook (via DBnomics)", "url": "https://db.nomics.world/IMF/WEO"},
+                {"name": "FMI — Direction of Trade Statistics (via DBnomics)", "url": "https://db.nomics.world/IMF/DOT"},
                 {"name": "Google News RSS", "url": "https://news.google.com/rss"},
                 {"name": "GDELT DOC 2.0 API", "url": "https://api.gdeltproject.org/api/v2/doc/doc"},
                 {"name": "VADER Sentiment", "url": "https://github.com/cjhutto/vaderSentiment"},
@@ -1155,6 +1309,7 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
                     "Valeur manquante : médiane de la région, signalée « Estimation » dans le panneau du pays.",
                     "Tourisme : la Banque mondiale n'a pas publié de série post-2020 ; la dernière année pré-Covid (2019) est utilisée.",
                     "Dépendance USD hors 40 pays de référence : régime de change classé à la main, exportations de matières premières de la Banque mondiale, dette/facturation/dépôts estimés par régime et région.",
+                    "Profil d'exposition externe : 10 axes ramenés à 0-100 (commerce avec la Chine et les États-Unis plafonné à 40 % des échanges, énergie importée, alimentation 30 % des importations, diaspora 20 % du PIB, aide 15 % du RNB, matières premières, tourisme 50 % des exportations, dollar US, dette extérieure 120 % du RNB) ; l'indice est leur moyenne.",
                     "Projection « Continuité actuelle » en USD constants : la croissance converge de sa moyenne 5 ans vers une ancre de long terme dépendant de la démographie, freinée au-delà de 90 % de dette/PIB.",
                     "La dette projetée suppose un solde primaire nul et un taux réel uniforme ; ce n'est pas une prévision.",
                 ],

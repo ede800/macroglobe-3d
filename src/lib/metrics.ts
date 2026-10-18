@@ -1,4 +1,4 @@
-import type { Country, FilterKey, MacroData } from '../types';
+import type { Country, DependencyKey, ExposureAxisKey, FilterKey, MacroData } from '../types';
 
 // ---------------------------------------------------------------------------
 // Color ramps (dark surface). Sequential: near-zero recedes toward the dark
@@ -32,6 +32,16 @@ function hexToRgb(hex: string): [number, number, number] {
 
 function rgbToHex([r, g, b]: [number, number, number]): string {
   return '#' + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
+}
+
+/** One-hue sequential ramp for the dark surface: near-zero recedes into the background, high values glow. */
+function hueRamp(hex: string): string[] {
+  const mix = (a: string, b: string, t: number) => {
+    const x = hexToRgb(a);
+    const y = hexToRgb(b);
+    return rgbToHex([x[0] + (y[0] - x[0]) * t, x[1] + (y[1] - x[1]) * t, x[2] + (y[2] - x[2]) * t]);
+  };
+  return [mix(hex, '#05070b', 0.82), mix(hex, '#05070b', 0.62), mix(hex, '#05070b', 0.38), hex, mix(hex, '#ffffff', 0.3), mix(hex, '#ffffff', 0.58)];
 }
 
 function interpolateRamp(ramp: string[], t: number): string {
@@ -112,6 +122,8 @@ export interface LegendSpec {
 
 export interface FilterDef {
   key: FilterKey;
+  /** false when the country has no data for this metric (drawn as "no data", left out of rankings) */
+  available: (c: Country) => boolean;
   label: string;
   short: string;
   description: string;
@@ -141,9 +153,83 @@ const TRAJ_TICKS = [
   { at: 1, label: '≥ +20' },
 ];
 
+const RED_RAMP = hueRamp('#e66767');
+const VIOLET_RAMP = hueRamp('#9085e9');
+const AMBER_RAMP = hueRamp('#d99a1e');
+const AQUA_RAMP = hueRamp('#1fb27e');
+const MAGENTA_RAMP = hueRamp('#d55181');
+
+const always = () => true;
+
+const depValue = (c: Country, k: DependencyKey) => c.dependencies?.indicators[k]?.value ?? null;
+const partnerShare = (c: Country, p: 'china' | 'us' | 'eu') => c.dependencies?.partners?.[p]?.share ?? null;
+const axisValue = (c: Country, k: ExposureAxisKey) => c.dependencies?.exposure.axes.find((a) => a.key === k)?.value ?? null;
+
+interface MetricSpec {
+  key: FilterKey;
+  label: string;
+  short: string;
+  description: string;
+  get: (c: Country) => number | null;
+  show: (v: number) => string;
+  /** shorter value for rankings (defaults to show) */
+  brief?: (v: number) => string;
+  detail?: (c: Country) => string;
+  scale: (v: number) => number;
+  ramp: string[];
+  ticks: { at: number; label: string }[];
+  caption: string;
+  higherIsBetter: boolean | null;
+}
+
+/** Filter over a value that may be missing for some countries. */
+function metric(m: MetricSpec): FilterDef {
+  const pos = (c: Country) => clamp01(m.scale(m.get(c) ?? 0));
+  return {
+    key: m.key,
+    available: (c) => m.get(c) !== null,
+    label: m.label,
+    short: m.short,
+    description: m.description,
+    value: (c) => m.get(c) ?? Number.NEGATIVE_INFINITY,
+    format: (c) => {
+      const v = m.get(c);
+      if (v === null) return 'Donnée indisponible';
+      const extra = m.detail?.(c);
+      return extra ? `${m.show(v)} · ${extra}` : m.show(v);
+    },
+    compact: (c) => {
+      const v = m.get(c);
+      return v === null ? 'n.d.' : (m.brief ?? m.show)(v);
+    },
+    position: pos,
+    color: (c) => interpolateRamp(m.ramp, pos(c)),
+    legend: { kind: 'sequential', stops: m.ramp, ticks: m.ticks, caption: m.caption },
+    higherIsBetter: m.higherIsBetter,
+  };
+}
+
+const pctTicks = (max: number, steps: number[]) => [
+  ...steps.map((v) => ({ at: v / max, label: `${v} %` })),
+  { at: 1, label: `≥ ${max} %` },
+];
+
+const sqrtTicks = (max: number, steps: number[]) => [
+  { at: 0, label: '0 %' },
+  ...steps.map((v) => ({ at: Math.sqrt(v / max), label: `${v} %` })),
+  { at: 1, label: `≥ ${max} %` },
+];
+
+function partnerDetail(c: Country, p: 'china' | 'us' | 'eu'): string {
+  const s = c.dependencies?.partners?.[p];
+  if (!s) return '';
+  return `export. ${s.exports === null ? 'n.d.' : fmt.pct(s.exports)} · import. ${s.imports === null ? 'n.d.' : fmt.pct(s.imports)}`;
+}
+
 export const FILTERS: Record<FilterKey, FilterDef> = {
   confidence: {
     key: 'confidence',
+    available: always,
     compact: (c) => fmt.num(c.confidence.score),
     label: 'Santé globale / Confiance',
     short: 'Confiance',
@@ -157,6 +243,7 @@ export const FILTERS: Record<FilterKey, FilterDef> = {
   },
   gdp: {
     key: 'gdp',
+    available: always,
     compact: (c) => fmt.usd(c.indicators.gdp_usd),
     label: 'PIB & Croissance',
     short: 'PIB',
@@ -175,6 +262,7 @@ export const FILTERS: Record<FilterKey, FilterDef> = {
   },
   tourism: {
     key: 'tourism',
+    available: always,
     compact: (c) => fmt.pct(c.indicators.tourism_exports_pct),
     label: 'Dépendance au tourisme',
     short: 'Tourisme',
@@ -193,6 +281,7 @@ export const FILTERS: Record<FilterKey, FilterDef> = {
   },
   usd: {
     key: 'usd',
+    available: always,
     compact: (c) => `${fmt.num(c.usd.score, 0)} / 100`,
     label: 'Dépendance au dollar US',
     short: 'USD',
@@ -206,6 +295,7 @@ export const FILTERS: Record<FilterKey, FilterDef> = {
   },
   traj10: {
     key: 'traj10',
+    available: always,
     compact: (c) => `${fmt.signed(trajectoryDelta(c, 10))} pts`,
     label: 'Trajectoire à 10 ans',
     short: '+10 ans',
@@ -220,6 +310,7 @@ export const FILTERS: Record<FilterKey, FilterDef> = {
   },
   traj25: {
     key: 'traj25',
+    available: always,
     compact: (c) => `${fmt.signed(trajectoryDelta(c, 25))} pts`,
     label: 'Trajectoire à 25 ans',
     short: '+25 ans',
@@ -232,9 +323,163 @@ export const FILTERS: Record<FilterKey, FilterDef> = {
     legend: { kind: 'diverging', stops: DIVERGING, ticks: TRAJ_TICKS, caption: 'Variation du score de stabilité (pts)' },
     higherIsBetter: true,
   },
+  exposure: metric({
+    key: 'exposure',
+    label: 'Exposition externe (indice)',
+    short: 'Exposition',
+    description: 'Moyenne de 10 dépendances ramenées à 0-100 : Chine, États-Unis, énergie, alimentation, diaspora, aide, matières premières, tourisme, dollar, dette extérieure.',
+    get: (c) => c.dependencies?.exposure.score ?? null,
+    show: (v) => `${fmt.num(v)} / 100`,
+    scale: (v) => (v - 10) / 55,
+    ramp: MAGENTA_RAMP,
+    ticks: [{ at: 0, label: '≤ 10' }, { at: 0.364, label: '30' }, { at: 0.727, label: '50' }, { at: 1, label: '≥ 65' }],
+    caption: 'Indice d’exposition externe (0-100)',
+    higherIsBetter: false,
+  }),
+  china: metric({
+    key: 'china',
+    label: 'Dépendance commerciale à la Chine',
+    short: 'Chine',
+    description: 'Part de la Chine dans le commerce total de biens du pays (exportations + importations).',
+    get: (c) => partnerShare(c, 'china'),
+    show: (v) => `${fmt.pct(v)} des échanges`,
+    brief: (v) => fmt.pct(v),
+    detail: (c) => partnerDetail(c, 'china'),
+    scale: (v) => v / 40,
+    ramp: RED_RAMP,
+    ticks: pctTicks(40, [0, 10, 20, 30]),
+    caption: 'Part de la Chine dans le commerce de biens',
+    higherIsBetter: false,
+  }),
+  us_trade: metric({
+    key: 'us_trade',
+    label: 'Dépendance commerciale aux États-Unis',
+    short: 'États-Unis',
+    description: 'Part des États-Unis dans le commerce total de biens du pays (exportations + importations).',
+    get: (c) => partnerShare(c, 'us'),
+    show: (v) => `${fmt.pct(v)} des échanges`,
+    brief: (v) => fmt.pct(v),
+    detail: (c) => partnerDetail(c, 'us'),
+    scale: (v) => v / 40,
+    ramp: BLUE_RAMP,
+    ticks: pctTicks(40, [0, 10, 20, 30]),
+    caption: 'Part des États-Unis dans le commerce de biens',
+    higherIsBetter: false,
+  }),
+  eu_trade: metric({
+    key: 'eu_trade',
+    label: 'Dépendance commerciale à l’Union européenne',
+    short: 'UE',
+    description: 'Part de l’UE dans le commerce total de biens (pour les membres, inclut le commerce intra-européen).',
+    get: (c) => partnerShare(c, 'eu'),
+    show: (v) => `${fmt.pct(v)} des échanges`,
+    brief: (v) => fmt.pct(v),
+    detail: (c) => partnerDetail(c, 'eu'),
+    scale: (v) => v / 70,
+    ramp: VIOLET_RAMP,
+    ticks: pctTicks(70, [0, 20, 40]),
+    caption: 'Part de l’UE dans le commerce de biens',
+    higherIsBetter: false,
+  }),
+  energy: metric({
+    key: 'energy',
+    label: 'Dépendance énergétique',
+    short: 'Énergie',
+    description: 'Importations nettes d’énergie en % de la consommation (0 = exportateur net). À défaut : part des carburants dans les importations.',
+    get: (c) => axisValue(c, 'energy'),
+    show: (v) => (v <= 0 ? 'Exportateur net' : `${fmt.num(v, 0)} % importés`),
+    brief: (v) => (v <= 0 ? 'export. net' : `${fmt.num(v, 0)} %`),
+    scale: (v) => v / 100,
+    ramp: AMBER_RAMP,
+    ticks: [{ at: 0, label: 'Export.' }, { at: 0.25, label: '25 %' }, { at: 0.5, label: '50 %' }, { at: 0.75, label: '75 %' }, { at: 1, label: '100 %' }],
+    caption: 'Énergie importée, % de la consommation',
+    higherIsBetter: false,
+  }),
+  food: metric({
+    key: 'food',
+    label: 'Dépendance alimentaire',
+    short: 'Alimentation',
+    description: 'Part des produits alimentaires dans les importations de biens.',
+    get: (c) => depValue(c, 'food_imports'),
+    show: (v) => `${fmt.pct(v)} des importations`,
+    brief: (v) => fmt.pct(v),
+    scale: (v) => v / 30,
+    ramp: AQUA_RAMP,
+    ticks: pctTicks(30, [0, 10, 20]),
+    caption: 'Alimentation, % des importations de biens',
+    higherIsBetter: false,
+  }),
+  remittances: metric({
+    key: 'remittances',
+    label: 'Dépendance aux diasporas',
+    short: 'Diaspora',
+    description: 'Envois de fonds des travailleurs émigrés, en % du PIB.',
+    get: (c) => depValue(c, 'remittances'),
+    show: (v) => `${fmt.pct(v)} du PIB`,
+    brief: (v) => fmt.pct(v),
+    scale: (v) => Math.sqrt(Math.max(0, v) / 30),
+    ramp: VIOLET_RAMP,
+    ticks: sqrtTicks(30, [2, 8, 17]),
+    caption: 'Envois de fonds, % du PIB (échelle racine)',
+    higherIsBetter: false,
+  }),
+  aid: metric({
+    key: 'aid',
+    label: 'Dépendance à l’aide internationale',
+    short: 'Aide',
+    description: 'Aide publique au développement nette reçue, en % du revenu national brut.',
+    get: (c) => depValue(c, 'aid') ?? (c.income === 'HIC' ? 0 : null),
+    show: (v) => `${fmt.pct(v)} du RNB`,
+    brief: (v) => fmt.pct(v),
+    scale: (v) => Math.sqrt(Math.max(0, v) / 20),
+    ramp: AQUA_RAMP,
+    ticks: sqrtTicks(20, [1, 5, 11]),
+    caption: 'Aide reçue, % du RNB (échelle racine)',
+    higherIsBetter: false,
+  }),
+  external_debt: metric({
+    key: 'external_debt',
+    label: 'Dette extérieure',
+    short: 'Dette ext.',
+    description: 'Encours de dette extérieure (publique et privée) en % du RNB — publié pour les pays à revenu faible et intermédiaire.',
+    get: (c) => depValue(c, 'external_debt'),
+    show: (v) => `${fmt.num(v, 0)} % du RNB`,
+    brief: (v) => `${fmt.num(v, 0)} %`,
+    detail: (c) => {
+      const s = depValue(c, 'debt_service');
+      return s === null ? '' : `service ${fmt.pct(s)} des exportations`;
+    },
+    scale: (v) => v / 150,
+    ramp: RED_RAMP,
+    ticks: [{ at: 0, label: '0 %' }, { at: 1 / 3, label: '50 %' }, { at: 2 / 3, label: '100 %' }, { at: 1, label: '≥ 150 %' }],
+    caption: 'Dette extérieure, % du RNB',
+    higherIsBetter: false,
+  }),
+  reserves: metric({
+    key: 'reserves',
+    label: 'Coussin de réserves de change',
+    short: 'Réserves',
+    description: 'Réserves de change en mois d’importations. Sous 3 mois : seuil d’alerte usuel du FMI.',
+    get: (c) => depValue(c, 'reserves_months'),
+    show: (v) => `${fmt.num(v)} mois`,
+    scale: (v) => v / 12,
+    ramp: BLUE_RAMP,
+    ticks: [{ at: 0, label: '0' }, { at: 0.25, label: '3 mois' }, { at: 0.5, label: '6' }, { at: 0.75, label: '9' }, { at: 1, label: '≥ 12' }],
+    caption: 'Mois d’importations couverts (plus = plus résilient)',
+    higherIsBetter: true,
+  }),
 };
 
-export const FILTER_ORDER: FilterKey[] = ['confidence', 'gdp', 'tourism', 'usd', 'traj10', 'traj25'];
+export const PRIMARY_FILTERS: FilterKey[] = ['confidence', 'gdp', 'traj10', 'traj25'];
+
+export const DEPENDENCY_FILTERS: { group: string; keys: FilterKey[] }[] = [
+  { group: 'Synthèse', keys: ['exposure'] },
+  { group: 'Partenaires commerciaux', keys: ['china', 'us_trade', 'eu_trade'] },
+  { group: 'Ressources & revenus', keys: ['tourism', 'energy', 'food', 'remittances', 'aid'] },
+  { group: 'Finance', keys: ['usd', 'external_debt', 'reserves'] },
+];
+
+export const FILTER_ORDER: FilterKey[] = [...PRIMARY_FILTERS, ...DEPENDENCY_FILTERS.flatMap((g) => g.keys)];
 
 // ---------------------------------------------------------------------------
 // Data normalisation (French names for the ~160 countries the pipeline only knows in English)

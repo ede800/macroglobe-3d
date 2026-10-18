@@ -4,6 +4,7 @@ import { CartesianGrid, Legend, Line, LineChart, ReferenceArea, ResponsiveContai
 import type { Country } from '../types';
 import { COLORS, flagUrl, fmt } from '../lib/metrics';
 import { AXIS_PROPS, ChartTooltipBox, ToneBadge } from './ui';
+import ExposureRadar from './ExposureRadar';
 
 interface ComparisonModalProps {
   a: Country;
@@ -17,7 +18,7 @@ type Better = 'higher' | 'lower' | 'none' | ((v: number) => number);
 interface Row {
   group: string;
   label: string;
-  get: (c: Country) => number;
+  get: (c: Country) => number | null;
   format: (v: number) => string;
   better: Better;
 }
@@ -35,6 +36,15 @@ const ROWS: Row[] = [
   { group: 'Aujourd’hui', label: 'Démographie', get: (c) => c.indicators.pop_growth, format: (v) => fmt.pct(v, true), better: 'none' },
   { group: 'Dépendances', label: 'Tourisme (% export.)', get: (c) => c.indicators.tourism_exports_pct, format: (v) => fmt.pct(v), better: 'lower' },
   { group: 'Dépendances', label: 'Dépendance USD', get: (c) => c.usd.score, format: (v) => `${fmt.num(v, 0)} / 100`, better: 'lower' },
+  { group: 'Dépendances', label: 'Exposition externe', get: (c) => c.dependencies?.exposure.score ?? null, format: (v) => `${fmt.num(v, 0)} / 100`, better: 'lower' },
+  { group: 'Dépendances', label: 'Commerce avec la Chine', get: (c) => c.dependencies?.partners?.china?.share ?? null, format: (v) => fmt.pct(v), better: 'none' },
+  { group: 'Dépendances', label: 'Commerce avec les É.-U.', get: (c) => c.dependencies?.partners?.us?.share ?? null, format: (v) => fmt.pct(v), better: 'none' },
+  { group: 'Dépendances', label: 'Commerce avec l’UE', get: (c) => c.dependencies?.partners?.eu?.share ?? null, format: (v) => fmt.pct(v), better: 'none' },
+  { group: 'Dépendances', label: 'Énergie importée', get: (c) => c.dependencies?.indicators.energy_net_imports.value ?? null, format: (v) => (v <= 0 ? 'export. net' : `${fmt.num(v, 0)} %`), better: 'lower' },
+  { group: 'Dépendances', label: 'Alimentation (% import.)', get: (c) => c.dependencies?.indicators.food_imports.value ?? null, format: (v) => fmt.pct(v), better: 'lower' },
+  { group: 'Dépendances', label: 'Diaspora (% PIB)', get: (c) => c.dependencies?.indicators.remittances.value ?? null, format: (v) => fmt.pct(v), better: 'none' },
+  { group: 'Dépendances', label: 'Dette extérieure (% RNB)', get: (c) => c.dependencies?.indicators.external_debt.value ?? null, format: (v) => `${fmt.num(v, 0)} %`, better: 'lower' },
+  { group: 'Dépendances', label: 'Réserves (mois d’import.)', get: (c) => c.dependencies?.indicators.reserves_months.value ?? null, format: (v) => fmt.num(v), better: 'higher' },
   { group: 'Confiance', label: 'Score de confiance', get: (c) => c.confidence.score, format: (v) => fmt.num(v), better: 'higher' },
   { group: 'Confiance', label: 'Sentiment actualité', get: (c) => c.sentiment.score, format: (v) => fmt.num(v, 0), better: 'higher' },
   { group: 'Projections', label: 'PIB +10 ans', get: (c) => c.projection.gdp_10 * 1e9, format: fmt.usd, better: 'none' },
@@ -47,8 +57,11 @@ const ROWS: Row[] = [
 function winner(row: Row, a: Country, b: Country): 'a' | 'b' | null {
   if (row.better === 'none') return null;
   const key = typeof row.better === 'function' ? row.better : row.better === 'higher' ? (v: number) => v : (v: number) => -v;
-  const va = key(row.get(a));
-  const vb = key(row.get(b));
+  const ra = row.get(a);
+  const rb = row.get(b);
+  if (ra === null || rb === null) return null;
+  const va = key(ra);
+  const vb = key(rb);
   if (Math.abs(va - vb) < 1e-6) return null;
   return va > vb ? 'a' : 'b';
 }
@@ -145,6 +158,10 @@ export default function ComparisonModal({ a, b, onClose, onSwap }: ComparisonMod
 
           <div className="space-y-5 border-t border-terminal-line px-5 py-4 md:border-l md:border-t-0">
             <figure>
+              <figcaption className="mb-1 text-xs text-terminal-sub">Profil d’exposition externe (0-100 par axe)</figcaption>
+              <ExposureRadar series={[{ country: a, color: colorA }, { country: b, color: colorB }]} height={280} />
+            </figure>
+            <figure>
               <figcaption className="mb-1 text-xs text-terminal-sub">PIB réel projeté, indice 100 = {a.projection.base_year}</figcaption>
               <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
@@ -169,8 +186,8 @@ export default function ComparisonModal({ a, b, onClose, onSwap }: ComparisonMod
                       }}
                     />
                     <Legend verticalAlign="top" height={24} iconType="circle" iconSize={8} formatter={(v: string) => <span className="text-xs text-terminal-sub">{v}</span>} />
-                    <Line name={a.name_fr} type="monotone" dataKey="gdpA" stroke={colorA} strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: COLORS.surface, strokeWidth: 2 }} />
-                    <Line name={b.name_fr} type="monotone" dataKey="gdpB" stroke={colorB} strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: COLORS.surface, strokeWidth: 2 }} />
+                    <Line isAnimationActive={false} name={a.name_fr} type="monotone" dataKey="gdpA" stroke={colorA} strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: COLORS.surface, strokeWidth: 2 }} />
+                    <Line isAnimationActive={false} name={b.name_fr} type="monotone" dataKey="gdpB" stroke={colorB} strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: COLORS.surface, strokeWidth: 2 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -201,8 +218,8 @@ export default function ComparisonModal({ a, b, onClose, onSwap }: ComparisonMod
                       }}
                     />
                     <Legend verticalAlign="top" height={24} iconType="circle" iconSize={8} formatter={(v: string) => <span className="text-xs text-terminal-sub">{v}</span>} />
-                    <Line name={a.name_fr} type="monotone" dataKey="stabA" stroke={colorA} strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: COLORS.surface, strokeWidth: 2 }} />
-                    <Line name={b.name_fr} type="monotone" dataKey="stabB" stroke={colorB} strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: COLORS.surface, strokeWidth: 2 }} />
+                    <Line isAnimationActive={false} name={a.name_fr} type="monotone" dataKey="stabA" stroke={colorA} strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: COLORS.surface, strokeWidth: 2 }} />
+                    <Line isAnimationActive={false} name={b.name_fr} type="monotone" dataKey="stabB" stroke={colorB} strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: COLORS.surface, strokeWidth: 2 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -245,7 +262,10 @@ function GroupRows({ group, a, b }: { group: string; a: Country; b: Country }) {
             <td className="py-1.5 text-xs text-terminal-sub">{r.label}</td>
             {(['a', 'b'] as const).map((side) => (
               <td key={side} className={`py-1.5 font-mono text-[13px] tabular-nums ${w === side ? 'font-semibold text-terminal-ink' : 'text-terminal-sub'}`}>
-                {r.format(r.get(side === 'a' ? a : b))}
+                {(() => {
+                  const v = r.get(side === 'a' ? a : b);
+                  return v === null ? <span className="text-terminal-muted">n.d.</span> : r.format(v);
+                })()}
                 {w === side && <span className="ml-1 text-[10px] text-terminal-accent">▲</span>}
               </td>
             ))}

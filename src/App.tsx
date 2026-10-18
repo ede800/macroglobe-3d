@@ -2,12 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   BarChart3,
-  DollarSign,
   Globe2,
   Hourglass,
   HeartPulse,
   Info,
-  Plane,
   RotateCcw,
   TrendingUp,
   X,
@@ -21,15 +19,14 @@ import MapLegend from './components/MapLegend';
 import WorldPanel from './components/WorldPanel';
 import Ticker from './components/Ticker';
 import type { CountryCollection, FilterKey, MacroData } from './types';
-import { FILTER_ORDER, FILTERS, normalizeData } from './lib/metrics';
+import { FILTERS, normalizeData, PRIMARY_FILTERS } from './lib/metrics';
+import DependencyMenu from './components/DependencyMenu';
 
 const BASE = import.meta.env.BASE_URL;
 
-const FILTER_ICONS: Record<FilterKey, LucideIcon> = {
+const FILTER_ICONS: Partial<Record<FilterKey, LucideIcon>> = {
   confidence: HeartPulse,
   gdp: BarChart3,
-  tourism: Plane,
-  usd: DollarSign,
   traj10: TrendingUp,
   traj25: Hourglass,
 };
@@ -114,10 +111,11 @@ export default function App() {
   // Deep links: https://…/#FRA opens France directly; the hash follows the selection.
   useEffect(() => {
     if (state.status !== 'ready') return;
-    const iso = window.location.hash.slice(1).toUpperCase();
+    const [iso, other] = window.location.hash.slice(1).toUpperCase().split(',');
     const country = byIso.get(iso);
     if (!country) return;
     setSelectedIso(iso);
+    if (other && other !== iso && byIso.has(other)) setCompareIso(other);
     const timer = window.setTimeout(() => globeRef.current?.flyTo(country), 600);
     return () => window.clearTimeout(timer);
   }, [state.status, byIso]);
@@ -128,8 +126,9 @@ export default function App() {
     if (filter === 'confidence') params.delete('filter');
     else params.set('filter', filter);
     const query = params.toString();
-    window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}${selectedIso ? `#${selectedIso}` : ''}`);
-  }, [selectedIso, filter, state.status]);
+    const hash = selectedIso ? `#${selectedIso}${compareIso ? `,${compareIso}` : ''}` : '';
+    window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}${hash}`);
+  }, [selectedIso, compareIso, filter, state.status]);
 
   const closeSidebar = useCallback(() => {
     setSelectedIso(null);
@@ -202,10 +201,10 @@ export default function App() {
             className="-mx-1 flex min-w-0 gap-1 overflow-x-auto rounded-lg px-1 pb-0.5 lg:flex-1 lg:justify-center lg:pb-0"
             aria-label="Filtre de coloration du globe"
           >
-            {FILTER_ORDER.map((key) => {
-              const Icon = FILTER_ICONS[key];
+            {PRIMARY_FILTERS.map((key, i) => {
+              const Icon = FILTER_ICONS[key] ?? HeartPulse;
               const active = filter === key;
-              return (
+              const button = (
                 <button
                   key={key}
                   onClick={() => setFilter(key)}
@@ -221,6 +220,15 @@ export default function App() {
                   <span className="hidden min-[1800px]:inline">{FILTERS[key].label}</span>
                   <span className="min-[1800px]:hidden">{FILTERS[key].short}</span>
                 </button>
+              );
+              // the dependency menu sits between "PIB" and the trajectories
+              return i === 1 ? (
+                <div key={key} className="flex gap-1">
+                  {button}
+                  <DependencyMenu filter={filter} onChange={setFilter} />
+                </div>
+              ) : (
+                button
               );
             })}
           </nav>
@@ -272,6 +280,8 @@ export default function App() {
           key={selected.iso3}
           country={selected}
           compareMode={compareMode}
+          activeFilter={filter}
+          onShowOnGlobe={setFilter}
           onClose={closeSidebar}
           onCompare={() => setCompareMode((v) => !v)}
         />

@@ -5,6 +5,10 @@ import {
   DollarSign,
   ExternalLink,
   Gauge,
+  Globe2,
+  Network,
+  Radar as RadarIcon,
+  Scale,
   LineChart as LineChartIcon,
   Newspaper,
   Plane,
@@ -24,15 +28,18 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { Country, GrowthPoint, ProjectionPoint } from '../types';
-import { COLORS, confidenceColor, flagUrl, fmt, INCOME_LABELS, withAlpha } from '../lib/metrics';
+import type { Country, DependencyKey, FilterKey, GrowthPoint, ProjectionPoint } from '../types';
+import { COLORS, confidenceColor, DEPENDENCY_FILTERS, FILTERS, flagUrl, fmt, INCOME_LABELS, withAlpha } from '../lib/metrics';
 import { AXIS_PROPS, ChartTooltipBox, ConfidenceGauge, Meter, Section, StatTile, ToneBadge } from './ui';
+import ExposureRadar from './ExposureRadar';
 
 interface CountrySidebarProps {
   country: Country;
   compareMode: boolean;
+  activeFilter: FilterKey;
   onClose: () => void;
   onCompare: () => void;
+  onShowOnGlobe: (filter: FilterKey) => void;
 }
 
 type Tab = 'overview' | 'dependencies' | 'news' | 'projections';
@@ -59,6 +66,161 @@ const isEstimate = (source: string | undefined) => Boolean(source?.startsWith('E
 function SourceNote({ source }: { source: string | undefined }) {
   if (!source) return null;
   return <span className={isEstimate(source) ? 'text-terminal-accent/90' : undefined}>{source}</span>;
+}
+
+interface DependencyRowSpec {
+  key: DependencyKey;
+  label: string;
+  max: number;
+  unit: (v: number) => string;
+  filter?: FilterKey;
+  hint?: string;
+  marker?: { at: number; label: string };
+}
+
+const DEP_SECTIONS: { title: string; rows: DependencyRowSpec[] }[] = [
+  {
+    title: 'Énergie, alimentation & ressources',
+    rows: [
+      { key: 'energy_net_imports', label: 'Énergie importée (% de la consommation)', max: 100, unit: (v) => (v <= 0 ? 'exportateur net' : `${fmt.num(v, 0)} %`), filter: 'energy' },
+      { key: 'fuel_imports', label: 'Carburants (% des importations)', max: 40, unit: (v) => fmt.pct(v) },
+      { key: 'food_imports', label: 'Alimentation (% des importations)', max: 40, unit: (v) => fmt.pct(v), filter: 'food' },
+      { key: 'resource_rents', label: 'Rentes des ressources naturelles (% du PIB)', max: 40, unit: (v) => fmt.pct(v) },
+    ],
+  },
+  {
+    title: 'Flux financiers',
+    rows: [
+      { key: 'remittances', label: 'Envois de fonds des diasporas (% du PIB)', max: 30, unit: (v) => fmt.pct(v), filter: 'remittances' },
+      { key: 'aid', label: 'Aide au développement reçue (% du RNB)', max: 20, unit: (v) => fmt.pct(v), filter: 'aid' },
+      { key: 'fdi', label: 'Investissements étrangers entrants (% du PIB)', max: 15, unit: (v) => fmt.pct(v, true) },
+      { key: 'trade_openness', label: 'Ouverture commerciale (commerce / PIB)', max: 200, unit: (v) => `${fmt.num(v, 0)} %` },
+    ],
+  },
+  {
+    title: 'Dette extérieure & réserves',
+    rows: [
+      { key: 'external_debt', label: 'Dette extérieure (% du RNB)', max: 150, unit: (v) => `${fmt.num(v, 0)} %`, filter: 'external_debt' },
+      { key: 'debt_service', label: 'Service de la dette (% des exportations)', max: 40, unit: (v) => fmt.pct(v) },
+      {
+        key: 'reserves_months',
+        label: 'Réserves de change (mois d’importations)',
+        max: 15,
+        unit: (v) => `${fmt.num(v)} mois`,
+        filter: 'reserves',
+        hint: 'Coussin de sécurité : plus c’est haut, mieux c’est.',
+        marker: { at: 3, label: 'seuil 3 mois' },
+      },
+    ],
+  },
+];
+
+function GlobeLink({ filter, active, onClick }: { filter: FilterKey; active: boolean; onClick: (f: FilterKey) => void }) {
+  return (
+    <button
+      onClick={() => onClick(filter)}
+      className={`ml-1 inline-flex h-5 w-5 items-center justify-center rounded transition ${
+        active ? 'bg-terminal-accent text-black' : 'text-terminal-muted hover:bg-white/[0.08] hover:text-terminal-accent'
+      }`}
+      title={`Colorer le globe : ${FILTERS[filter].label}`}
+      aria-label={`Afficher « ${FILTERS[filter].label} » sur le globe`}
+    >
+      <Globe2 size={11} />
+    </button>
+  );
+}
+
+function DependencyRows({ country, rows, activeFilter, onShowOnGlobe }: { country: Country; rows: DependencyRowSpec[]; activeFilter: FilterKey; onShowOnGlobe: (f: FilterKey) => void }) {
+  const ind = country.dependencies?.indicators;
+  return (
+    <ul className="space-y-3">
+      {rows.map((r) => {
+        const item = ind?.[r.key];
+        const v = item?.value ?? (r.key === 'aid' && country.income === 'HIC' ? 0 : null);
+        const color = r.filter && v !== null ? FILTERS[r.filter].color(country) : COLORS.sub;
+        const pct = v === null ? 0 : Math.max(0, Math.min(100, (v / r.max) * 100));
+        return (
+          <li key={r.key}>
+            <div className="mb-1 flex items-baseline justify-between gap-2 text-xs">
+              <span className="flex items-center text-terminal-sub">
+                {r.label}
+                {r.filter && <GlobeLink filter={r.filter} active={activeFilter === r.filter} onClick={onShowOnGlobe} />}
+              </span>
+              <span className="shrink-0 font-mono font-semibold tabular-nums text-terminal-ink">{v === null ? 'n.d.' : r.unit(v)}</span>
+            </div>
+            <div className="relative h-2 rounded-full bg-white/[0.06]">
+              {v !== null && <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />}
+              {r.marker && (
+                <div className="absolute -top-0.5 h-3 w-px bg-terminal-accent" style={{ left: `${(r.marker.at / r.max) * 100}%` }} title={r.marker.label} />
+              )}
+            </div>
+            <div className="mt-0.5 text-[10px] text-terminal-muted">
+              {v === null
+                ? r.key === 'external_debt' || r.key === 'debt_service'
+                  ? 'Publié uniquement pour les pays à revenu faible et intermédiaire'
+                  : 'Aucune série récente publiée'
+                : [item?.source ?? (r.key === 'aid' ? 'Pays à revenu élevé : non bénéficiaire' : null), r.hint].filter(Boolean).join(' · ')}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function PartnersBlock({ country, activeFilter, onShowOnGlobe }: { country: Country; activeFilter: FilterKey; onShowOnGlobe: (f: FilterKey) => void }) {
+  const partners = country.dependencies?.partners;
+  if (!partners) return <p className="text-xs text-terminal-muted">Répartition du commerce indisponible (pays absent des statistiques du FMI).</p>;
+  const rows: { key: 'china' | 'us' | 'eu'; label: string; flag: string; filter: FilterKey }[] = [
+    { key: 'china', label: 'Chine', flag: 'cn', filter: 'china' },
+    { key: 'us', label: 'États-Unis', flag: 'us', filter: 'us_trade' },
+    { key: 'eu', label: 'Union européenne', flag: 'eu', filter: 'eu_trade' },
+  ];
+  const others = Math.max(0, 100 - rows.reduce((sum, r) => sum + (partners[r.key]?.share ?? 0), 0));
+  return (
+    <div>
+      <div className="mb-3 flex h-3 gap-[2px] overflow-hidden rounded-full bg-white/[0.06]" role="img" aria-label="Répartition du commerce de biens par partenaire">
+        {rows.map((r) => {
+          const p = partners[r.key];
+          return p && p.share > 0 ? (
+            <div key={r.key} style={{ width: `${p.share}%`, background: FILTERS[r.filter].legend.stops[3] }} title={`${r.label} : ${fmt.pct(p.share)}`} />
+          ) : null;
+        })}
+        <div style={{ width: `${others}%`, background: '#3a3f48' }} title={`Reste du monde : ${fmt.pct(others)}`} />
+      </div>
+      <ul className="space-y-2.5">
+        {rows.map((r) => {
+          const p = partners[r.key];
+          return (
+            <li key={r.key} className="flex items-center gap-2.5">
+              <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: FILTERS[r.filter].legend.stops[3] }} />
+              <img src={flagUrl(r.flag)} alt="" className="h-3 w-[18px] rounded-[2px] object-cover" />
+              <span className="flex flex-1 items-center text-xs text-terminal-sub">
+                {r.label}
+                <GlobeLink filter={r.filter} active={activeFilter === r.filter} onClick={onShowOnGlobe} />
+              </span>
+              {p ? (
+                <span className="text-right">
+                  <span className="font-mono text-sm font-semibold tabular-nums text-terminal-ink">{fmt.pct(p.share)}</span>
+                  <span className="block text-[10px] text-terminal-muted">
+                    export. {p.exports === null ? 'n.d.' : fmt.pct(p.exports)} · import. {p.imports === null ? 'n.d.' : fmt.pct(p.imports)}
+                  </span>
+                </span>
+              ) : (
+                <span className="text-[11px] text-terminal-muted">—</span>
+              )}
+            </li>
+          );
+        })}
+        <li className="flex items-center gap-2.5 text-xs text-terminal-muted">
+          <span className="h-2.5 w-2.5 shrink-0 rounded-sm bg-[#3a3f48]" />
+          <span className="flex-1">Reste du monde</span>
+          <span className="font-mono tabular-nums">{fmt.pct(others)}</span>
+        </li>
+      </ul>
+      <p className="mt-2 text-[10px] text-terminal-muted">Part du commerce de biens (exportations + importations) · {partners.source}</p>
+    </div>
+  );
 }
 
 function FactorBars({ country }: { country: Country }) {
@@ -257,8 +419,11 @@ function QualityBadge({ country }: { country: Country }) {
   );
 }
 
-export default function CountrySidebar({ country, compareMode, onClose, onCompare }: CountrySidebarProps) {
-  const [tab, setTab] = useState<Tab>('overview');
+export default function CountrySidebar({ country, compareMode, activeFilter, onClose, onCompare, onShowOnGlobe }: CountrySidebarProps) {
+  // Opening a country while a dependency filter is active lands directly on the matching tab.
+  const [tab, setTab] = useState<Tab>(() =>
+    DEPENDENCY_FILTERS.some((g) => g.keys.includes(activeFilter)) ? 'dependencies' : 'overview',
+  );
   const { indicators: ind, confidence, usd, sentiment, projection, sources } = country;
   const tint = confidenceColor(confidence.score);
   const growthDelta = ind.gdp_growth - ind.growth_5y_avg;
@@ -377,6 +542,46 @@ export default function CountrySidebar({ country, compareMode, onClose, onCompar
 
         {tab === 'dependencies' && (
           <>
+            <Section
+              title="Profil d’exposition externe"
+              icon={<RadarIcon size={13} />}
+              aside={
+                country.dependencies?.exposure.score != null ? (
+                  <span className="flex items-center font-mono text-lg font-semibold text-terminal-ink">
+                    {fmt.num(country.dependencies.exposure.score, 0)}
+                    <span className="text-xs text-terminal-muted">&nbsp;/ 100</span>
+                    <GlobeLink filter="exposure" active={activeFilter === 'exposure'} onClick={onShowOnGlobe} />
+                  </span>
+                ) : undefined
+              }
+            >
+              <ExposureRadar series={[{ country, color: '#d55181' }]} />
+              {country.dependencies && (
+                <p className="mt-1 text-[11px] leading-relaxed text-terminal-muted">
+                  Principales dépendances :{' '}
+                  <span className="text-terminal-sub">
+                    {[...country.dependencies.exposure.axes]
+                      .filter((a) => a.value !== null)
+                      .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
+                      .slice(0, 3)
+                      .map((a) => `${a.label} (${fmt.num(a.value ?? 0, 0)})`)
+                      .join(', ')}
+                  </span>
+                  . Chaque axe est ramené à 0-100 ; l’indice en est la moyenne.
+                </p>
+              )}
+            </Section>
+
+            <Section title="Partenaires commerciaux" icon={<Network size={13} />}>
+              <PartnersBlock country={country} activeFilter={activeFilter} onShowOnGlobe={onShowOnGlobe} />
+            </Section>
+
+            {DEP_SECTIONS.map((section) => (
+              <Section key={section.title} title={section.title} icon={<Scale size={13} />}>
+                <DependencyRows country={country} rows={section.rows} activeFilter={activeFilter} onShowOnGlobe={onShowOnGlobe} />
+              </Section>
+            ))}
+
             <Section title="Tourisme" icon={<Plane size={13} />}>
               <div className="space-y-3">
                 <Meter label="Recettes, % des exportations" value={ind.tourism_exports_pct} max={50} color="#d95926" valueLabel={fmt.pct(ind.tourism_exports_pct)} />

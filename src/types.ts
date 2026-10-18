@@ -121,6 +121,63 @@ export interface Projection {
   series: ProjectionPoint[];
 }
 
+export interface DependencyIndicator {
+  label: string;
+  value: number | null;
+  source: string | null;
+}
+
+export type DependencyKey =
+  | 'energy_net_imports'
+  | 'fuel_imports'
+  | 'food_imports'
+  | 'remittances'
+  | 'aid'
+  | 'resource_rents'
+  | 'trade_openness'
+  | 'fdi'
+  | 'external_debt'
+  | 'debt_service'
+  | 'reserves_months';
+
+export interface PartnerShare {
+  share: number; // % of total goods trade (exports + imports)
+  exports: number | null;
+  imports: number | null;
+}
+
+export interface TradePartners {
+  year: number;
+  source: string;
+  china: PartnerShare | null; // null for China itself
+  us: PartnerShare | null; // null for the US itself
+  eu: PartnerShare | null;
+}
+
+export type ExposureAxisKey =
+  | 'china'
+  | 'us'
+  | 'energy'
+  | 'food'
+  | 'remittances'
+  | 'aid'
+  | 'commodities'
+  | 'tourism'
+  | 'usd'
+  | 'external_debt';
+
+export interface ExposureAxis {
+  key: ExposureAxisKey;
+  label: string;
+  value: number | null; // 0-100 intensity
+}
+
+export interface Dependencies {
+  indicators: Record<DependencyKey, DependencyIndicator>;
+  partners: TradePartners | null;
+  exposure: { score: number | null; axes: ExposureAxis[] };
+}
+
 export interface DataQuality {
   score: number; // % of core indicators backed by World Bank / IMF data (not estimated)
   estimated: string[];
@@ -143,6 +200,7 @@ export interface Country {
   indicators: Indicators;
   sources: Record<string, string>;
   usd: UsdDependence;
+  dependencies?: Dependencies;
   confidence: Confidence;
   sentiment: Sentiment;
   projection: Projection;
@@ -152,7 +210,7 @@ export interface MacroMeta {
   schema_version: number;
   generated_at: string;
   mode: 'online' | 'offline';
-  status: { world_bank: string; imf?: string; news: string };
+  status: { world_bank: string; imf?: string; trade?: string; news: string };
   imf_vintage?: string | null;
   country_count: number;
   sources: { name: string; url: string }[];
@@ -169,7 +227,24 @@ export interface MacroData {
   countries: Country[];
 }
 
-export type FilterKey = 'confidence' | 'gdp' | 'tourism' | 'usd' | 'traj10' | 'traj25';
+export type FilterKey =
+  | 'confidence'
+  | 'gdp'
+  | 'traj10'
+  | 'traj25'
+  // dependency filters
+  | 'exposure'
+  | 'tourism'
+  | 'usd'
+  | 'china'
+  | 'us_trade'
+  | 'eu_trade'
+  | 'energy'
+  | 'food'
+  | 'remittances'
+  | 'aid'
+  | 'external_debt'
+  | 'reserves';
 
 export interface CountryFeature {
   type: 'Feature';

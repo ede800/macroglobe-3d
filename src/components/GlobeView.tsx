@@ -140,6 +140,7 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
       const f = obj as CountryFeature;
       const c = countries.get(f.properties.ISO_A3);
       if (!c) return withAlpha(COLORS.noData, 0.55);
+      if (!def.available(c)) return withAlpha('#2a2f38', 0.75);
       const base = def.color(c);
       const highlighted = f.properties.ISO_A3 === hoverIso || f.properties.ISO_A3 === selectedIso || f.properties.ISO_A3 === compareIso;
       return withAlpha(base, highlighted ? 1 : 0.88);
@@ -150,7 +151,7 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
   const sideColor = useCallback(
     (obj: object) => {
       const c = countries.get((obj as CountryFeature).properties.ISO_A3);
-      return c ? withAlpha(def.color(c), 0.35) : 'rgba(20, 26, 34, 0.3)';
+      return c && def.available(c) ? withAlpha(def.color(c), 0.35) : 'rgba(20, 26, 34, 0.3)';
     },
     [countries, def],
   );
@@ -237,7 +238,10 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
         pointsData={markers}
         pointLat={(p: object) => (p as MarkerPoint).country.lat}
         pointLng={(p: object) => (p as MarkerPoint).country.lng}
-        pointColor={(p: object) => def.color((p as MarkerPoint).country)}
+        pointColor={(p: object) => {
+          const c = (p as MarkerPoint).country;
+          return def.available(c) ? def.color(c) : '#3a404a';
+        }}
         pointAltitude={(p: object) => {
           const iso = (p as MarkerPoint).country.iso3;
           return iso === selectedIso || iso === compareIso ? 0.07 : iso === hoverIso ? 0.045 : 0.025;
