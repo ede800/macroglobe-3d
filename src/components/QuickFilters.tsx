@@ -17,27 +17,27 @@ interface PillOption<T extends string> {
 
 const BLOC: PillOption<PoliticalBloc>[] = [
   { value: 'all', label: 'Tous' },
-  { value: 'left', label: 'Communisme / Gauche', dot: [POLITICAL_COLORS[0].color, POLITICAL_COLORS[1].color] },
+  { value: 'left', label: 'Gauche / Communisme', dot: [POLITICAL_COLORS[0].color, POLITICAL_COLORS[1].color] },
   { value: 'center', label: 'Centre', dot: [POLITICAL_COLORS[2].color] },
   { value: 'right', label: 'Droite / Nationaliste', dot: [POLITICAL_COLORS[3].color, POLITICAL_COLORS[4].color] },
 ];
 
 const DEMO: PillOption<DemographicTrend>[] = [
   { value: 'all', label: 'Tous' },
-  { value: 'decline', label: 'Déclin (< 2,1 enf./femme)', dot: ['#e5484d'] },
-  { value: 'growth', label: 'Croissance (> 2,1)', dot: ['#10b981'] },
+  { value: 'decline', label: 'Déclin < 2,1 enf.', dot: ['#e5484d'] },
+  { value: 'growth', label: 'Croissance > 2,1', dot: ['#10b981'] },
 ];
 
 const MOOD: PillOption<MoodFilter>[] = [
   { value: 'all', label: 'Tous' },
-  { value: 'optimist', label: 'Optimiste (> 60)', dot: ['#3987e5'] },
-  { value: 'pessimist', label: 'Pessimiste (< 40)', dot: ['#e66767'] },
+  { value: 'optimist', label: 'Optimiste > 60', dot: ['#3987e5'] },
+  { value: 'pessimist', label: 'Pessimiste < 40', dot: ['#e66767'] },
 ];
 
 function PillGroup<T extends string>({ label, options, value, onChange }: { label: string; options: PillOption<T>[]; value: T; onChange: (v: T) => void }) {
   return (
     <div className="flex shrink-0 items-center gap-1" role="radiogroup" aria-label={label}>
-      <span className="mr-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-terminal-muted">{label}</span>
+      <span className="mr-0.5 hidden text-[10px] font-semibold uppercase tracking-[0.12em] text-terminal-muted min-[1600px]:inline">{label}</span>
       {options.map((o) => {
         const active = o.value === value;
         return (
