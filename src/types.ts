@@ -97,6 +97,7 @@ export interface ProjectionPoint {
   growth: number;
   debt: number;
   stability: number;
+  population?: number | null; // UN WPP medium variant when available
 }
 
 export interface Projection {
@@ -109,6 +110,9 @@ export interface Projection {
     debt_drag: number;
     confidence_adjustment: number;
     real_interest_rate: number;
+    population_trend?: number;
+    fertility_drag_25?: number;
+    aging_drag_25?: number;
   };
   cagr_10: number;
   cagr_25: number;
@@ -118,6 +122,8 @@ export interface Projection {
   stability_25: number;
   debt_10: number;
   debt_25: number;
+  population_10?: number | null;
+  population_25?: number | null;
   series: ProjectionPoint[];
 }
 
@@ -178,6 +184,57 @@ export interface Dependencies {
   exposure: { score: number | null; axes: ExposureAxis[] };
 }
 
+export type FertilityStatus = 'Hiver démographique' | 'Sous le seuil de renouvellement' | 'Stable' | 'Boom démographique';
+
+export interface Demography {
+  population: number | null;
+  population_growth: number;
+  fertility_rate: number | null; // children per woman, replacement = 2.1
+  fertility_status: FertilityStatus | null;
+  life_expectancy: number | null;
+  median_age: number | null;
+  share_65plus: number | null;
+  population_projection: { year: number; population: number }[];
+  sources: Record<string, string>;
+}
+
+export interface Society {
+  hdi: number | null; // 0-1
+  gini: number | null; // 0-100
+  gdp_ppp_per_capita: number | null; // current international $
+  unemployment: number | null; // %
+  corruption_cpi: number | null; // 0 (very corrupt) - 100 (very clean)
+  low_carbon_electricity: number | null; // % of electricity
+  energy_self_sufficiency: number | null; // % of energy use produced domestically (capped at 100 in display)
+  sources: Record<string, string>;
+}
+
+export type PoliticalCategory =
+  | 'Extrême-Gauche / Communiste'
+  | 'Gauche / Social-démocrate'
+  | 'Centre / Libéral'
+  | 'Droite / Conservateur'
+  | 'Droite Nationaliste / Extrême-Droite'
+  | 'Monarchie Absolue / Théocratie / Autre';
+
+export interface Leader {
+  name: string;
+  title: string | null;
+  party: string | null;
+  since: number | null;
+  photo_url: string | null;
+  wikidata: string;
+}
+
+export interface Politics {
+  political_category: PoliticalCategory | null; // null = party without positioning data (unclassified)
+  political_position_score: number | null; // -100 far left .. +100 far right
+  regime_type: string | null;
+  ruling_party: { name: string | null; ideology: string | null } | null;
+  leaders: Leader[];
+  source: string;
+}
+
 export interface DataQuality {
   score: number; // % of core indicators backed by World Bank / IMF data (not estimated)
   estimated: string[];
@@ -201,6 +258,9 @@ export interface Country {
   sources: Record<string, string>;
   usd: UsdDependence;
   dependencies?: Dependencies;
+  demography?: Demography;
+  society?: Society;
+  politics?: Politics | null;
   confidence: Confidence;
   sentiment: Sentiment;
   projection: Projection;
@@ -210,7 +270,7 @@ export interface MacroMeta {
   schema_version: number;
   generated_at: string;
   mode: 'online' | 'offline';
-  status: { world_bank: string; imf?: string; trade?: string; news: string };
+  status: { world_bank: string; imf?: string; trade?: string; owid?: string; politics?: string; news: string };
   imf_vintage?: string | null;
   country_count: number;
   sources: { name: string; url: string }[];
@@ -230,8 +290,22 @@ export interface MacroData {
 export type FilterKey =
   | 'confidence'
   | 'gdp'
+  | 'ppp'
+  | 'growth'
+  | 'debt'
   | 'traj10'
   | 'traj25'
+  // demography & society
+  | 'population'
+  | 'fertility'
+  | 'median_age'
+  | 'life_expectancy'
+  | 'hdi'
+  | 'gini'
+  | 'corruption'
+  | 'unemployment'
+  // politics
+  | 'politics'
   // dependency filters
   | 'exposure'
   | 'tourism'
@@ -255,4 +329,14 @@ export interface CountryFeature {
 export interface CountryCollection {
   type: 'FeatureCollection';
   features: CountryFeature[];
+}
+
+export type PoliticalBloc = 'all' | 'left' | 'center' | 'right';
+export type DemographicTrend = 'all' | 'decline' | 'growth';
+export type MoodFilter = 'all' | 'optimist' | 'pessimist';
+
+export interface QuickFilters {
+  bloc: PoliticalBloc;
+  demography: DemographicTrend;
+  mood: MoodFilter;
 }

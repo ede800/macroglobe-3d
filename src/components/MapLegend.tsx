@@ -47,28 +47,48 @@ export default function MapLegend({ filter, countries, onSelect }: MapLegendProp
       <div className="font-semibold text-terminal-ink">{def.label}</div>
       <p className="mt-0.5 text-[11px] leading-snug text-terminal-muted">{def.description}</p>
 
-      <div className="mt-3 flex h-10 items-end gap-[2px]" role="img" aria-label={`Répartition des ${ranked.length} pays sur l’échelle`}>
-        {bins.map((n, i) => (
-          <div
-            key={i}
-            className="flex-1 rounded-t-[2px] transition-[height] duration-500"
-            style={{ height: `${n ? Math.max(8, (n / maxBin) * 100) : 0}%`, background: rampColor(def.legend.stops, (i + 0.5) / BINS) }}
-            title={`${n} pays`}
-          />
-        ))}
-      </div>
-      <div className="mt-[2px] h-1.5 rounded-full" style={{ background: `linear-gradient(90deg, ${def.legend.stops.join(', ')})` }} />
-      <div className="relative mt-1 h-4 font-mono text-[10px] text-terminal-muted">
-        {def.legend.ticks.map((t) => (
-          <span
-            key={t.label}
-            className="absolute whitespace-nowrap"
-            style={{ left: `${t.at * 100}%`, transform: t.at === 0 ? 'none' : t.at === 1 ? 'translateX(-100%)' : 'translateX(-50%)' }}
-          >
-            {t.label}
-          </span>
-        ))}
-      </div>
+      {def.categories && def.categoryOf ? (
+        <ul className="mt-3 space-y-1">
+          {def.categories.map((cat, i) => {
+            const n = withData.filter((c) => def.categoryOf?.(c) === i).length;
+            return (
+              <li key={cat.label} className="flex items-center gap-2 text-[11px]">
+                <span className="h-3 w-3 shrink-0 rounded-[3px]" style={{ background: cat.color }} />
+                <span className="flex-1 truncate text-terminal-sub">{cat.label}</span>
+                <span className="h-1.5 w-16 overflow-hidden rounded-full bg-white/[0.06]">
+                  <span className="block h-full rounded-full" style={{ width: `${(n / Math.max(1, withData.length)) * 100}%`, background: cat.color }} />
+                </span>
+                <span className="w-6 text-right font-mono tabular-nums text-terminal-ink">{n}</span>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <>
+          <div className="mt-3 flex h-10 items-end gap-[2px]" role="img" aria-label={`Répartition des ${ranked.length} pays sur l’échelle`}>
+            {bins.map((n, i) => (
+              <div
+                key={i}
+                className="flex-1 rounded-t-[2px] transition-[height] duration-500"
+                style={{ height: `${n ? Math.max(8, (n / maxBin) * 100) : 0}%`, background: rampColor(def.legend.stops, (i + 0.5) / BINS) }}
+                title={`${n} pays`}
+              />
+            ))}
+          </div>
+          <div className="mt-[2px] h-1.5 rounded-full" style={{ background: `linear-gradient(90deg, ${def.legend.stops.join(', ')})` }} />
+          <div className="relative mt-1 h-4 font-mono text-[10px] text-terminal-muted">
+            {def.legend.ticks.map((t) => (
+              <span
+                key={t.label}
+                className="absolute whitespace-nowrap"
+                style={{ left: `${t.at * 100}%`, transform: t.at === 0 ? 'none' : t.at === 1 ? 'translateX(-100%)' : 'translateX(-50%)' }}
+              >
+                {t.label}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
       <div className="flex items-center justify-between gap-2 text-[10px] text-terminal-muted">
         <span>{def.legend.caption}</span>
         {missing > 0 && (

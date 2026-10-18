@@ -21,6 +21,8 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import csv
+import io
 import json
 import math
 import statistics
@@ -122,6 +124,14 @@ WB_INDICATORS = {
     "DT.DOD.DECT.GN.ZS": ("external_debt", 4),
     "DT.TDS.DECT.EX.ZS": ("debt_service", 4),
     "FI.RES.TOTL.MO": ("reserves_months", 4),
+    # demography & society (V2)
+    "SP.POP.TOTL": ("population", 3),
+    "SP.DYN.TFRT.IN": ("fertility_rate", 5),
+    "SP.DYN.LE00.IN": ("life_expectancy", 5),
+    "SP.POP.65UP.TO.ZS": ("share_65plus", 4),
+    "SI.POV.GINI": ("gini", 15),
+    "NY.GDP.PCAP.PP.CD": ("gdp_ppp_per_capita", 4),
+    "SL.UEM.TOTL.ZS": ("unemployment", 4),
 }
 
 # Finance-specific additions to the VADER lexicon (VADER is tuned for social media).
@@ -654,6 +664,452 @@ def compute_dependencies(wb: dict[str, Series], dot: dict[str, Any], iso3: str, 
     return {"indicators": indicators, "partners": partners, "exposure": {"score": exposure, "axes": axes}}
 
 
+# ---------------------------------------------------------------------------
+# Demography & society: Our World in Data (UN WPP, UNDP, Transparency International, Ember)
+# ---------------------------------------------------------------------------
+
+OWID_SERIES = {
+    "median_age": "median-age",
+    "population_un": "population-with-un-projections",
+    "hdi": "human-development-index",
+    "corruption": "ti-corruption-perception-index",
+    "low_carbon_electricity": "share-electricity-low-carbon",
+}
+
+
+def fetch_owid(slug: str) -> dict[str, dict[int, float]]:
+    """{iso3: {year: value}} from an OWID grapher CSV (estimates and UN projections merged)."""
+    url = f"https://ourworldindata.org/grapher/{slug}.csv?v=1&csvType=full&useColumnShortNames=true"
+    rows = csv.DictReader(io.StringIO(http_get(url).text))
+    out: dict[str, dict[int, float]] = {}
+    for row in rows:
+        code = row.get("code") or ""
+        if len(code) != 3 or not (row.get("year") or "").lstrip("-").isdigit():
+            continue
+        value = next((row[k] for k in row if k not in ("entity", "code", "year", "owid_region") and row[k] not in ("", None)), None)
+        if value is None:
+            continue
+        try:
+            out.setdefault(code, {})[int(row["year"])] = float(value)
+        except ValueError:
+            continue
+    return out
+
+
+def fetch_all_owid() -> dict[str, dict[str, dict[int, float]]]:
+    result: dict[str, dict[str, dict[int, float]]] = {}
+    for key, slug in OWID_SERIES.items():
+        try:
+            result[key] = fetch_owid(slug)
+            log(f"OWID {slug:<32} -> {len(result[key])} pays")
+        except Exception as exc:  # noqa: BLE001
+            log(f"OWID {slug} FAILED ({exc})")
+            result[key] = {}
+    return result
+
+
+def owid_latest(series: dict[int, float] | None, max_year: int, max_age: int) -> tuple[int, float] | None:
+    if not series:
+        return None
+    years = [y for y in series if y <= max_year]
+    if not years:
+        return None
+    y = max(years)
+    return (y, series[y]) if y >= max_year - max_age else None
+
+
+def fertility_status(tfr: float | None) -> str | None:
+    if tfr is None:
+        return None
+    if tfr < 1.5:
+        return "Hiver démographique"
+    if tfr < 2.1:
+        return "Sous le seuil de renouvellement"
+    if tfr <= 2.5:
+        return "Stable"
+    return "Boom démographique"
+
+
+def compute_demography(iso3: str, wb: dict[str, Series], owid: dict[str, dict[str, dict[int, float]]],
+                       ind: dict[str, Any], base_year: int) -> dict[str, Any]:
+    ages = {fld: age for fld, age in WB_INDICATORS.values()}
+    now_year = datetime.now(timezone.utc).year
+    sources: dict[str, str] = {}
+
+    def wbv(fld: str) -> float | None:
+        got = pick_fresh(wb.get(fld), ages[fld])
+        if got:
+            sources[fld] = f"World Bank {got[0]}"
+            return got[1]
+        return None
+
+    population = wbv("population")
+    un_pop = owid.get("population_un", {}).get(iso3, {})
+    if population is None and un_pop:
+        got = owid_latest(un_pop, now_year, 3)
+        if got:
+            population = got[1]
+            sources["population"] = f"ONU WPP {got[0]}"
+
+    median = owid_latest(owid.get("median_age", {}).get(iso3), now_year, 3)
+    if median:
+        sources["median_age"] = f"ONU WPP {median[0]}"
+
+    tfr = wbv("fertility_rate")
+    # UN population projection (medium variant), rebased on the latest observed population
+    projection: list[dict[str, Any]] = []
+    if un_pop and population:
+        anchor = un_pop.get(base_year) or un_pop.get(now_year)
+        if anchor:
+            for t in range(0, 26):
+                y = base_year + t
+                if y in un_pop:
+                    projection.append({"year": y, "population": round(population * un_pop[y] / anchor)})
+            if projection:
+                sources["population_projection"] = "ONU WPP (variante moyenne)"
+    return {
+        "population": round(population) if population else None,
+        "population_growth": r2(ind["pop_growth"]),
+        "fertility_rate": r2(tfr) if tfr is not None else None,
+        "fertility_status": fertility_status(tfr),
+        "life_expectancy": r1(v) if (v := wbv("life_expectancy")) is not None else None,
+        "median_age": r1(median[1]) if median else None,
+        "share_65plus": r1(v) if (v := wbv("share_65plus")) is not None else None,
+        "population_projection": projection,
+        "sources": sources,
+    }
+
+
+def compute_society(iso3: str, wb: dict[str, Series], owid: dict[str, dict[str, dict[int, float]]],
+                    dependencies: dict[str, Any]) -> dict[str, Any]:
+    ages = {fld: age for fld, age in WB_INDICATORS.values()}
+    now_year = datetime.now(timezone.utc).year
+    sources: dict[str, str] = {}
+
+    def wbv(fld: str) -> float | None:
+        got = pick_fresh(wb.get(fld), ages[fld])
+        if got:
+            sources[fld] = f"World Bank {got[0]}"
+            return got[1]
+        return None
+
+    def owv(key: str, label: str, max_age: int) -> float | None:
+        got = owid_latest(owid.get(key, {}).get(iso3), now_year, max_age)
+        if got:
+            sources[key] = f"{label} {got[0]}"
+            return got[1]
+        return None
+
+    net_imports = dependencies["indicators"]["energy_net_imports"]["value"]
+    self_sufficiency = None
+    if net_imports is not None:
+        # production / consumption: 100 % = self-sufficient, >100 % = net exporter
+        self_sufficiency = r1(max(0.0, 100.0 - net_imports))
+        sources["energy_self_sufficiency"] = dependencies["indicators"]["energy_net_imports"]["source"]
+    return {
+        "hdi": r2(v) if (v := owv("hdi", "PNUD", 4)) is not None else None,
+        "gini": r1(v) if (v := wbv("gini")) is not None else None,
+        "gdp_ppp_per_capita": round(v) if (v := wbv("gdp_ppp_per_capita")) is not None else None,
+        "unemployment": r1(v) if (v := wbv("unemployment")) is not None else None,
+        "corruption_cpi": r1(v) if (v := owv("corruption", "Transparency International", 3)) is not None else None,
+        "low_carbon_electricity": r1(v) if (v := owv("low_carbon_electricity", "Ember", 4)) is not None else None,
+        "energy_self_sufficiency": self_sufficiency,
+        "sources": sources,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Politics: Wikidata SPARQL (heads of state / government, parties, alignment)
+# ---------------------------------------------------------------------------
+
+WIKIDATA = "https://query.wikidata.org/sparql"
+
+POLITICAL_CATEGORIES = [
+    "Extrême-Gauche / Communiste",
+    "Gauche / Social-démocrate",
+    "Centre / Libéral",
+    "Droite / Conservateur",
+    "Droite Nationaliste / Extrême-Droite",
+    "Monarchie Absolue / Théocratie / Autre",
+]
+
+# Wikidata "political alignment" (P1387) English labels -> position on a -100 (far left) .. +100 (far right) axis
+ALIGNMENT_SCORES = {
+    "far-left politics": -90, "far-left": -90, "left-wing": -60, "left-wing politics": -60, "centre-left": -35,
+    "centre-left politics": -35, "centrism": 0, "centre": 0, "radical centre": 0, "big tent": 0, "syncretic politics": 0,
+    "centre-right": 35, "centre-right politics": 35, "right-wing": 60, "right-wing politics": 60,
+    "right-libertarianism": 60, "far-right politics": 90, "far-right": 90, "right-wing extremism": 90, "alt-right": 90,
+}
+
+# Ideology (P1142, French labels) keywords used when a party has no alignment statement, or to refine it
+IDEOLOGY_HINTS = [  # French and English labels; first match wins
+    (("marxisme-léninisme", "communisme", "maoïsme", "léninisme", "marxism–leninism", "marxism-leninism", "communism", "maoism"), -90),
+    (("hindutva", "ultranationalisme", "néofascisme", "ultranationalism", "neo-fascism"), 85),
+    (("nationalisme", "national-conservatisme", "populisme de droite", "souverainisme",
+      "nationalism", "national conservatism", "right-wing populism", "sovereigntism"), 70),
+    (("démocratie chrétienne", "conservatisme libéral", "libéral-conservatisme", "christian democracy", "liberal conservatism"), 35),
+    (("conservatisme", "droite", "conservatism"), 55),
+    (("socialisme", "social-démocratie", "progressisme", "travaillisme", "écosocialisme", "gauche",
+      "socialism", "social democracy", "progressivism", "labourism", "democratic socialism"), -45),
+    (("libéralisme social", "centrisme", "libéralisme", "europhilie", "social liberalism", "centrism", "liberalism",
+      "pro-europeanism"), 5),
+]
+NATIONALIST_KEYWORDS = ("hindutva", "nationalisme hindou", "ultranationalisme", "néofascisme", "nationalisme ethnique",
+                        "nativisme", "national-populisme")
+TRANSNATIONAL_PARTY_WORDS = ("européen", "european", "internationale", "international")  # e.g. EPP: not a national party
+INDEPENDENT_PARTY = "Q327591"  # "independent politician" is not a party
+
+OTHER_REGIME_KEYWORDS = ("monarchie absolue", "théocratie", "junte", "dictature militaire", "gouvernement militaire",
+                         "gouvernement provisoire", "émirat")
+COMMUNIST_STATES = {"CHN", "VNM", "LAO", "CUB", "PRK"}
+REGIME_PRIORITY = ("monarchie absolue", "théocratie", "État communiste", "parti unique", "junte", "monarchie constitutionnelle",
+                   "monarchie parlementaire", "semi-présidentiel", "régime présidentiel", "république présidentielle",
+                   "république parlementaire", "république fédérale", "république")
+
+
+def sparql(query: str) -> list[dict[str, Any]]:
+    if requests is None:
+        raise RuntimeError("requests is not installed")
+    for attempt in range(3):
+        resp = requests.post(WIKIDATA, data={"query": query, "format": "json"},
+                             headers={"User-Agent": USER_AGENT, "Accept": "application/sparql-results+json"}, timeout=90)
+        if resp.status_code == 429 or resp.status_code >= 500:
+            time.sleep(10 * (attempt + 1))
+            continue
+        resp.raise_for_status()
+        return resp.json()["results"]["bindings"]
+    raise RuntimeError(f"Wikidata SPARQL failed ({resp.status_code})")
+
+
+def _qid(uri: str) -> str:
+    return uri.rsplit("/", 1)[1]
+
+
+def _val(row: dict[str, Any], key: str) -> str | None:
+    return row[key]["value"] if key in row else None
+
+
+def _cap(text: str | None) -> str | None:
+    return text[:1].upper() + text[1:] if text else text
+
+
+def fetch_politics(iso3_list: set[str]) -> dict[str, dict[str, Any]]:
+    """Current heads of state/government with photo, party, party alignment and the form of government."""
+    leaders = sparql("""
+SELECT ?iso ?role ?person ?start WHERE {
+  ?country wdt:P298 ?iso .
+  { ?country p:P35 ?st . ?st ps:P35 ?person . BIND("state" AS ?role) }
+  UNION
+  { ?country p:P6 ?st . ?st ps:P6 ?person . BIND("government" AS ?role) }
+  FILTER NOT EXISTS { ?st pq:P582 ?end }
+  OPTIONAL { ?st pq:P580 ?start }
+}""")
+    leaders = [r for r in leaders if _val(r, "iso") in iso3_list]
+    persons = sorted({_qid(_val(r, "person")) for r in leaders if _val(r, "person", ).startswith("http://www.wikidata.org/entity/Q")})
+
+    people: dict[str, dict[str, Any]] = {}
+    for chunk_start in range(0, len(persons), 200):
+        chunk = persons[chunk_start:chunk_start + 200]
+        rows = sparql("""
+SELECT ?person ?label_fr ?label_mul ?label_en ?image ?party ?pstart WHERE {
+  VALUES ?person { %s }
+  OPTIONAL { ?person rdfs:label ?label_fr . FILTER(LANG(?label_fr) = "fr") }
+  OPTIONAL { ?person rdfs:label ?label_mul . FILTER(LANG(?label_mul) = "mul") }
+  OPTIONAL { ?person rdfs:label ?label_en . FILTER(LANG(?label_en) = "en") }
+  OPTIONAL { ?person wdt:P18 ?image }
+  OPTIONAL { ?person p:P102 ?ps . ?ps ps:P102 ?party . FILTER NOT EXISTS { ?ps pq:P582 ?pend } OPTIONAL { ?ps pq:P580 ?pstart } }
+}""" % " ".join("wd:" + p for p in chunk))
+        for r in rows:
+            pid = _qid(_val(r, "person"))
+            d = people.setdefault(pid, {"name": None, "image": None, "parties": [], "_starts": {}})
+            d["name"] = d["name"] or _val(r, "label_fr") or _val(r, "label_mul") or _val(r, "label_en")
+            d["image"] = d["image"] or _val(r, "image")
+            party = _val(r, "party")
+            if party and _qid(party) != INDEPENDENT_PARTY:
+                q = _qid(party)
+                if q not in d["parties"]:
+                    d["parties"].append(q)
+                d["_starts"][q] = max(d["_starts"].get(q, ""), _val(r, "pstart") or "")
+    for d in people.values():  # most recent membership first (e.g. Morena before an older PRD card)
+        d["parties"].sort(key=lambda q: d["_starts"].get(q, ""), reverse=True)
+
+    party_ids = sorted({p for d in people.values() for p in d["parties"]})
+    parties: dict[str, dict[str, Any]] = {}
+    if party_ids:
+        rows = sparql("""
+SELECT ?party ?label ?label_en ?alignLabel ?ideoLabel ?ideoLabelEn WHERE {
+  VALUES ?party { %s }
+  OPTIONAL { ?party rdfs:label ?label . FILTER(LANG(?label) = "fr") }
+  OPTIONAL { ?party rdfs:label ?label_en . FILTER(LANG(?label_en) = "en") }
+  OPTIONAL { ?party wdt:P1387 ?align . ?align rdfs:label ?alignLabel . FILTER(LANG(?alignLabel) = "en") }
+  OPTIONAL { ?party wdt:P1142 ?ideo .
+             OPTIONAL { ?ideo rdfs:label ?ideoLabel . FILTER(LANG(?ideoLabel) = "fr") }
+             OPTIONAL { ?ideo rdfs:label ?ideoLabelEn . FILTER(LANG(?ideoLabelEn) = "en") } }
+}""" % " ".join("wd:" + p for p in party_ids))
+        for r in rows:
+            pid = _qid(_val(r, "party"))
+            d = parties.setdefault(pid, {"name": None, "alignments": set(), "ideologies": [], "ideologies_en": []})
+            d["name"] = d["name"] or _val(r, "label") or _val(r, "label_en")
+            if _val(r, "alignLabel"):
+                d["alignments"].add(_val(r, "alignLabel"))
+            ideo = _val(r, "ideoLabel") or _val(r, "ideoLabelEn")
+            if ideo and ideo not in d["ideologies"]:
+                d["ideologies"].append(ideo)
+            ideo_en = _val(r, "ideoLabelEn")
+            if ideo_en and ideo_en not in d["ideologies_en"]:
+                d["ideologies_en"].append(ideo_en)
+
+    offices = sparql("""
+SELECT ?iso ?hosLabel ?hogLabel ?formLabel ?formLabelEn WHERE {
+  ?country wdt:P298 ?iso .
+  OPTIONAL { ?country wdt:P1906 ?hos . ?hos rdfs:label ?hosLabel . FILTER(LANG(?hosLabel) = "fr") }
+  OPTIONAL { ?country wdt:P1313 ?hog . ?hog rdfs:label ?hogLabel . FILTER(LANG(?hogLabel) = "fr") }
+  OPTIONAL { ?country wdt:P122 ?form .
+             OPTIONAL { ?form rdfs:label ?formLabel . FILTER(LANG(?formLabel) = "fr") }
+             OPTIONAL { ?form rdfs:label ?formLabelEn . FILTER(LANG(?formLabelEn) = "en") } }
+}""")
+    office_info: dict[str, dict[str, Any]] = {}
+    for r in offices:
+        iso = _val(r, "iso")
+        d = office_info.setdefault(iso, {"hos": None, "hog": None, "forms": []})
+        d["hos"] = d["hos"] or _val(r, "hosLabel")
+        hog = _val(r, "hogLabel")
+        if hog and not hog.lower().startswith("liste"):
+            d["hog"] = d["hog"] or hog
+        form = _val(r, "formLabel") or _val(r, "formLabelEn")
+        if form and form not in d["forms"]:
+            d["forms"].append(form)
+
+    out: dict[str, dict[str, Any]] = {}
+    by_country: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for r in leaders:
+        by_country.setdefault(_val(r, "iso"), {}).setdefault(_val(r, "role"), []).append(r)
+    for iso, roles in by_country.items():
+        out[iso] = build_politics(iso, roles, people, parties, office_info.get(iso, {"hos": None, "hog": None, "forms": []}))
+    log(f"Wikidata politique -> {len(out)} pays, {len(people)} dirigeants, {len(parties)} partis")
+    return out
+
+
+def _latest(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    named = [r for r in rows if _val(r, "person")]
+    return max(named, key=lambda r: _val(r, "start") or "") if named else None
+
+
+def party_score(party: dict[str, Any]) -> float | None:
+    scores = [ALIGNMENT_SCORES[a] for a in party["alignments"] if a in ALIGNMENT_SCORES]
+    ideologies = " | ".join(party["ideologies"] + party.get("ideologies_en", [])).lower()
+    if scores:
+        score = sum(scores) / len(scores)
+        if score > 30 and any(k in ideologies for k in NATIONALIST_KEYWORDS):
+            score = max(score, 75.0)  # national-conservative / ethno-nationalist right
+        return score
+    for keywords, value in IDEOLOGY_HINTS:
+        if any(k in ideologies for k in keywords):
+            return float(value)
+    return None
+
+
+def build_politics(iso3: str, roles: dict[str, list[dict[str, Any]]], people: dict[str, Any], parties: dict[str, Any],
+                   office: dict[str, Any]) -> dict[str, Any]:
+    forms = office["forms"]
+    forms_text = " | ".join(forms).lower()
+    hos_row, hog_row = _latest(roles.get("state", [])), _latest(roles.get("government", []))
+
+    def leader(row: dict[str, Any] | None, title: str | None) -> dict[str, Any] | None:
+        if not row:
+            return None
+        pid = _qid(_val(row, "person"))
+        p = people.get(pid, {})
+        party = parties.get(p["parties"][0]) if p.get("parties") else None
+        image = p.get("image")
+        photo = None
+        if image:
+            photo = image.replace("http://", "https://") + "?width=300"
+        start = _val(row, "start")
+        return {"name": p.get("name") or "—", "title": _cap(title), "party": party["name"] if party else None,
+                "since": int(start[:4]) if start and start[:4].isdigit() else None, "photo_url": photo, "wikidata": pid}
+
+    hos = leader(hos_row, office["hos"] or "Chef de l'État")
+    hog_title = office["hog"] if office["hog"] and office["hog"] != office["hos"] else "Chef du gouvernement"
+    hog = leader(hog_row, hog_title)
+    leaders: list[dict[str, Any]] = []
+    if hos:
+        leaders.append(hos)
+    if hog and (not hos or hog["wikidata"] != hos["wikidata"]):
+        leaders.append(hog)
+    elif hog and hos and hog["wikidata"] == hos["wikidata"] and hog_title != "Chef du gouvernement":
+        hos["title"] = f"{hos['title']} et {office['hog']}"
+
+    # Which leader's party defines the orientation: presidential systems -> head of state, otherwise head of government
+    presidential = any(k in forms_text for k in ("présidentiel", "semi-présidentiel")) or (hos and hog and hos["wikidata"] == hog["wikidata"])
+    ordered = [hos_row, hog_row] if presidential else [hog_row, hos_row]
+    # Party of the main executive leader; the other leader's party is used only when the main one has none.
+    ruling_party = None
+    for row in ordered:
+        if not row:
+            continue
+        p = people.get(_qid(_val(row, "person")), {})
+        candidates = [parties[q] for q in p.get("parties", []) if q in parties
+                      and not any(k in (parties[q]["name"] or "").lower() for k in TRANSNATIONAL_PARTY_WORDS)]
+        if candidates:
+            scored = [c for c in candidates if party_score(c) is not None]
+            ruling_party = (scored or candidates)[0]
+            break
+
+    regime_type = None
+    for key in REGIME_PRIORITY:
+        match = next((f for f in forms if key.lower() in f.lower()), None)
+        if match:
+            regime_type = _cap(match)
+            break
+    regime_type = regime_type or (_cap(forms[0]) if forms else None)
+
+    score = party_score(ruling_party) if ruling_party else None
+    category: str | None
+    if iso3 in COMMUNIST_STATES:
+        category, score = POLITICAL_CATEGORIES[0], -95.0
+        regime_type = regime_type or "État communiste à parti unique"
+    elif any(k in forms_text for k in OTHER_REGIME_KEYWORDS):
+        category = POLITICAL_CATEGORIES[5]
+    elif score is None:
+        # no party, or a party without positioning/ideology on Wikidata: unclassified rather than guessed
+        category = None
+    elif score <= -70:
+        category = POLITICAL_CATEGORIES[0]
+    elif score <= -20:
+        category = POLITICAL_CATEGORIES[1]
+    elif score < 20:
+        category = POLITICAL_CATEGORIES[2]
+    elif score < 70:
+        category = POLITICAL_CATEGORIES[3]
+    else:
+        category = POLITICAL_CATEGORIES[4]
+
+    summary = None
+    if ruling_party:
+        ideologies = ruling_party["ideologies"][:3]
+        alignment_fr = {"far-left politics": "extrême gauche", "left-wing": "gauche", "centre-left": "centre gauche",
+                        "centrism": "centre", "big tent": "attrape-tout", "centre-right": "centre droit",
+                        "right-wing": "droite", "far-right politics": "extrême droite", "right-wing extremism": "extrême droite",
+                        "alt-right": "alt-right", "right-libertarianism": "droite libertarienne"}
+        aligns = [alignment_fr.get(a, a) for a in sorted(ruling_party["alignments"])]
+        parts = []
+        if aligns:
+            parts.append("positionnement : " + ", ".join(dict.fromkeys(aligns)))
+        if ideologies:
+            parts.append("idéologie : " + ", ".join(ideologies))
+        summary = _cap("; ".join(parts)) + "." if parts else None
+
+    return {
+        "political_category": category,
+        "political_position_score": round(score) if score is not None and category not in (None, POLITICAL_CATEGORIES[5]) else None,
+        "regime_type": regime_type,
+        "ruling_party": {"name": ruling_party["name"], "ideology": summary} if ruling_party else None,
+        "leaders": leaders[:2],
+        "source": "Wikidata",
+    }
+
+
 def pick_fresh(series: Series | None, max_age: int) -> tuple[int, float] | None:
     if not series:
         return None
@@ -959,26 +1415,58 @@ def compute_usd_dependence(seed: dict[str, Any], ind: dict[str, Any]) -> dict[st
     }
 
 
-def compute_projection(ind: dict[str, Any], confidence: float, sent_compound: float, base_year: int) -> dict[str, Any]:
-    """'Continuité actuelle' scenario: no policy change, mechanical convergence of every driver."""
+def compute_projection(ind: dict[str, Any], confidence: float, sent_compound: float, base_year: int,
+                       demo: dict[str, Any] | None = None) -> dict[str, Any]:
+    """'Continuité actuelle' scenario: no policy change, mechanical convergence of every driver.
+
+    Demography enters three times: the long-run anchor follows the UN projected population trend (labour force
+    proxy), fertility below replacement adds a brake that builds up over time (major below 1.5 child per woman),
+    and a large 65+ share adds an ageing drag.
+    """
     p = PROJECTION
+    demo = demo or {}
     winsorized = [clamp(v, -4.0, 10.0) for v in ind["growth_history_values"]] or [ind["gdp_growth"]]
     ma5 = sum(winsorized) / len(winsorized)
-    long_run = clamp(1.0 + 0.7 * ind["pop_growth"] + 0.25 * max(0.0, ma5 - 2.0), -1.0, 6.0)
+
+    pop_now = demo.get("population")
+    un_series = {pt["year"]: pt["population"] for pt in demo.get("population_projection") or []}
+    pop_trend = ind["pop_growth"]
+    if pop_now and un_series.get(base_year + 25):
+        pop_trend = ((un_series[base_year + 25] / pop_now) ** (1 / 25) - 1) * 100.0
+
+    long_run = clamp(1.0 + 0.7 * pop_trend + 0.25 * max(0.0, ma5 - 2.0), -1.0, 6.0)
     debt_drag = -min(1.0, 0.012 * max(0.0, ind["debt_gdp"] - 90.0))
     conf_adj = (confidence - 50.0) / 50.0 * 0.4
+    tfr = demo.get("fertility_rate")
+    share65 = demo.get("share_65plus")
+
+    def fertility_drag(t: int) -> float:
+        if tfr is None:
+            return 0.0
+        return -(0.5 * max(0.0, 1.5 - tfr) * min(1.0, t / 15) + 0.2 * max(0.0, 2.1 - tfr) * min(1.0, t / 25))
+
+    def aging_drag(t: int) -> float:
+        return -0.04 * max(0.0, (share65 or 0.0) - 15.0) * min(1.0, t / 20)
 
     gdp = ind["gdp_usd"]
     debt = ind["debt_gdp"]
+    pop = float(pop_now) if pop_now else None
     series = []
     for t in range(0, p["horizon_years"] + 1):
         if t == 0:
             g = ind["gdp_growth"]
         else:
             trend = long_run + (ma5 - long_run) * math.exp(-t / p["growth_half_life"])
-            g = trend + debt_drag + conf_adj * math.exp(-t / p["confidence_fade"])
+            g = trend + debt_drag + conf_adj * math.exp(-t / p["confidence_fade"]) + fertility_drag(t) + aging_drag(t)
             gdp *= 1.0 + g / 100.0
             debt = debt * (1.0 + p["real_interest_rate"] / 100.0) / (1.0 + g / 100.0)
+            if pop is not None:
+                y = base_year + t
+                if y in un_series:
+                    pop = float(un_series[y])
+                else:
+                    step = pop_trend + (ind["pop_growth"] - pop_trend) * math.exp(-t / 10)
+                    pop *= 1.0 + step / 100.0
 
         infl_t = 2.0 + (ind["inflation"] - 2.0) * math.exp(-t / p["inflation_fade"])
         ca_t = ind["current_account"] * math.exp(-t / p["current_account_fade"])
@@ -991,7 +1479,8 @@ def compute_projection(ind: dict[str, Any], confidence: float, sent_compound: fl
                      + CONFIDENCE_WEIGHTS["sentiment"] * sentiment_score(sent_t))
         if t == 0:
             stability = confidence
-        series.append({"year": base_year + t, "gdp": round(gdp / 1e9, 1), "growth": r2(g), "debt": r1(debt), "stability": r1(stability)})
+        series.append({"year": base_year + t, "gdp": round(gdp / 1e9, 1), "growth": r2(g), "debt": r1(debt),
+                       "stability": r1(stability), "population": round(pop) if pop is not None else None})
 
     def at(t: int) -> dict[str, Any]:
         return series[t]
@@ -1004,11 +1493,14 @@ def compute_projection(ind: dict[str, Any], confidence: float, sent_compound: fl
         "base_year": base_year,
         "unit": "USD constants de l'année de base (milliards)",
         "assumptions": {"growth_ma5": r2(ma5), "long_run_growth": r2(long_run), "debt_drag": r2(debt_drag),
-                        "confidence_adjustment": r2(conf_adj), "real_interest_rate": p["real_interest_rate"]},
+                        "confidence_adjustment": r2(conf_adj), "real_interest_rate": p["real_interest_rate"],
+                        "population_trend": r2(pop_trend), "fertility_drag_25": r2(fertility_drag(25)),
+                        "aging_drag_25": r2(aging_drag(25))},
         "cagr_10": r2(cagr(10)), "cagr_25": r2(cagr(25)),
         "gdp_10": at(10)["gdp"], "gdp_25": at(25)["gdp"],
         "stability_10": at(10)["stability"], "stability_25": at(25)["stability"],
         "debt_10": at(10)["debt"], "debt_25": at(25)["debt"],
+        "population_10": at(10)["population"], "population_25": at(25)["population"],
         "series": series,
     }
 
@@ -1155,7 +1647,7 @@ def resolve_sentiment(iso3: str, live: NewsResult | None, previous: dict[str, An
 
 
 def finalize(row: dict[str, Any], sentiment: dict[str, Any], centroids: dict[str, tuple[float, float]],
-             dot: dict[str, Any]) -> dict[str, Any]:
+             dot: dict[str, Any], owid: dict[str, Any], politics: dict[str, Any] | None) -> dict[str, Any]:
     meta, ind, sources = row["meta"], row["ind"], row["sources"]
     iso3 = meta["iso3"]
     seed = SEED_BY_ISO.get(iso3)
@@ -1164,7 +1656,9 @@ def finalize(row: dict[str, Any], sentiment: dict[str, Any], centroids: dict[str
     profile, usd_proxies = usd_profile(iso3, meta["region_id"] or "", meta["income"] or "", ind["commo"])
     usd = compute_usd_dependence(profile, ind)
     dependencies = compute_dependencies(row.get("wb", {}), dot, iso3, ind, usd["score"], meta.get("income"))
-    projection = compute_projection(ind, confidence["score"], sentiment["compound"], row["base_year"])
+    demography = compute_demography(iso3, row.get("wb", {}), owid, ind, row["base_year"])
+    society = compute_society(iso3, row.get("wb", {}), owid, dependencies)
+    projection = compute_projection(ind, confidence["score"], sentiment["compound"], row["base_year"], demography)
 
     if seed:
         lat, lng = seed["lat"], seed["lng"]
@@ -1201,6 +1695,9 @@ def finalize(row: dict[str, Any], sentiment: dict[str, Any], centroids: dict[str
         },
         "usd": usd,
         "dependencies": dependencies,
+        "demography": demography,
+        "society": society,
+        "politics": politics,
         "confidence": confidence,
         "sentiment": sentiment,
         "projection": projection,
@@ -1216,8 +1713,10 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
     wb: dict[str, dict[str, Series]] = {}
     imf: dict[str, dict[str, Series]] = {}
     vintage: str | None = None
-    imf_status = news_status = dot_status = "offline"
+    imf_status = news_status = dot_status = owid_status = politics_status = "offline"
     dot: dict[str, Any] = {}
+    owid: dict[str, Any] = {}
+    politics: dict[str, Any] = {}
 
     if not offline:
         try:
@@ -1259,6 +1758,14 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
         except Exception as exc:  # noqa: BLE001
             log(f"IMF DOT via DBnomics FAILED ({exc})")
             dot_status = "indisponible"
+        owid = fetch_all_owid()
+        owid_status = f"ok ({sum(1 for v in owid.values() if v)}/{len(OWID_SERIES)} séries)"
+        try:
+            politics = fetch_politics({r["meta"]["iso3"] for r in rows})
+            politics_status = f"ok ({len(politics)} pays)"
+        except Exception as exc:  # noqa: BLE001
+            log(f"Wikidata FAILED ({exc}), keeping cached political data")
+            politics_status = "cache"
 
     news: dict[str, NewsResult] = {}
     if not offline and with_news:
@@ -1270,7 +1777,8 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
 
     centroids = load_geo_centroids()
     countries = [finalize(r, resolve_sentiment(r["meta"]["iso3"], news.get(r["meta"]["iso3"]), previous, today), centroids,
-                          dot.get(r["meta"]["iso3"], {}))
+                          dot.get(r["meta"]["iso3"], {}), owid,
+                          politics.get(r["meta"]["iso3"]) or previous.get(r["meta"]["iso3"], {}).get("politics"))
                  for r in rows]
     countries += [{**c, "stale": True} for c in reused]
     countries.sort(key=lambda c: c["indicators"]["gdp_usd"], reverse=True)
@@ -1285,13 +1793,16 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
             "schema_version": SCHEMA_VERSION,
             "generated_at": now.isoformat(timespec="seconds"),
             "mode": "offline" if offline else "online",
-            "status": {"world_bank": wb_status, "imf": imf_status, "trade": dot_status, "news": news_status},
+            "status": {"world_bank": wb_status, "imf": imf_status, "trade": dot_status, "owid": owid_status,
+                       "politics": politics_status, "news": news_status},
             "country_count": len(countries),
             "imf_vintage": vintage,
             "sources": [
                 {"name": "World Bank Open Data API", "url": "https://api.worldbank.org/v2"},
                 {"name": "FMI — World Economic Outlook (via DBnomics)", "url": "https://db.nomics.world/IMF/WEO"},
                 {"name": "FMI — Direction of Trade Statistics (via DBnomics)", "url": "https://db.nomics.world/IMF/DOT"},
+                {"name": "Our World in Data (ONU WPP, PNUD, Transparency International, Ember)", "url": "https://ourworldindata.org"},
+                {"name": "Wikidata (dirigeants, partis, régimes)", "url": "https://query.wikidata.org"},
                 {"name": "Google News RSS", "url": "https://news.google.com/rss"},
                 {"name": "GDELT DOC 2.0 API", "url": "https://api.gdeltproject.org/api/v2/doc/doc"},
                 {"name": "VADER Sentiment", "url": "https://github.com/cjhutto/vaderSentiment"},
@@ -1311,6 +1822,8 @@ def build_dataset(offline: bool, with_news: bool, output: Path) -> dict[str, Any
                     "Dépendance USD hors 40 pays de référence : régime de change classé à la main, exportations de matières premières de la Banque mondiale, dette/facturation/dépôts estimés par régime et région.",
                     "Profil d'exposition externe : 10 axes ramenés à 0-100 (commerce avec la Chine et les États-Unis plafonné à 40 % des échanges, énergie importée, alimentation 30 % des importations, diaspora 20 % du PIB, aide 15 % du RNB, matières premières, tourisme 50 % des exportations, dollar US, dette extérieure 120 % du RNB) ; l'indice est leur moyenne.",
                     "Projection « Continuité actuelle » en USD constants : la croissance converge de sa moyenne 5 ans vers une ancre de long terme dépendant de la démographie, freinée au-delà de 90 % de dette/PIB.",
+                    "Démographie dans les projections : l'ancre de croissance suit la population projetée par l'ONU (variante moyenne) ; une fécondité sous 2,1 freine progressivement la croissance (frein majeur sous 1,5 enfant/femme) et une part de +65 ans au-delà de 15 % ajoute un frein de vieillissement.",
+                    "Orientation politique : positionnement (P1387) et idéologies (P1142) du parti du dirigeant exécutif principal sur Wikidata (chef de l'État en régime présidentiel, chef du gouvernement sinon), ramenés sur un axe −100 / +100. Monarchies absolues, théocraties et juntes sont classées à part.",
                     "La dette projetée suppose un solde primaire nul et un taux réel uniforme ; ce n'est pas une prévision.",
                 ],
             },

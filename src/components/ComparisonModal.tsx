@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { ArrowLeftRight, X } from 'lucide-react';
 import { CartesianGrid, Legend, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { Country } from '../types';
-import { COLORS, flagUrl, fmt } from '../lib/metrics';
+import { COLORS, flagUrl, fmt, fmtPopulation, POLITICAL_COLORS, politicalIndex } from '../lib/metrics';
 import { AXIS_PROPS, ChartTooltipBox, ToneBadge } from './ui';
 import ExposureRadar from './ExposureRadar';
 
@@ -45,6 +45,15 @@ const ROWS: Row[] = [
   { group: 'Dépendances', label: 'Diaspora (% PIB)', get: (c) => c.dependencies?.indicators.remittances.value ?? null, format: (v) => fmt.pct(v), better: 'none' },
   { group: 'Dépendances', label: 'Dette extérieure (% RNB)', get: (c) => c.dependencies?.indicators.external_debt.value ?? null, format: (v) => `${fmt.num(v, 0)} %`, better: 'lower' },
   { group: 'Dépendances', label: 'Réserves (mois d’import.)', get: (c) => c.dependencies?.indicators.reserves_months.value ?? null, format: (v) => fmt.num(v), better: 'higher' },
+  { group: 'Démographie & société', label: 'Population', get: (c) => c.demography?.population ?? null, format: fmtPopulation, better: 'none' },
+  { group: 'Démographie & société', label: 'Enfants par femme', get: (c) => c.demography?.fertility_rate ?? null, format: (v) => fmt.num(v, 2), better: 'none' },
+  { group: 'Démographie & société', label: 'Âge médian', get: (c) => c.demography?.median_age ?? null, format: (v) => `${fmt.num(v, 1)} ans`, better: 'none' },
+  { group: 'Démographie & société', label: 'Espérance de vie', get: (c) => c.demography?.life_expectancy ?? null, format: (v) => `${fmt.num(v, 1)} ans`, better: 'higher' },
+  { group: 'Démographie & société', label: 'IDH', get: (c) => c.society?.hdi ?? null, format: (v) => fmt.num(v, 3), better: 'higher' },
+  { group: 'Démographie & société', label: 'PIB PPA / habitant', get: (c) => c.society?.gdp_ppp_per_capita ?? null, format: (v) => `${fmt.num(v / 1000, 1)} k$`, better: 'higher' },
+  { group: 'Démographie & société', label: 'Chômage', get: (c) => c.society?.unemployment ?? null, format: (v) => fmt.pct(v), better: 'lower' },
+  { group: 'Démographie & société', label: 'Inégalités (Gini)', get: (c) => c.society?.gini ?? null, format: (v) => fmt.num(v, 1), better: 'lower' },
+  { group: 'Démographie & société', label: 'Intégrité (IPC)', get: (c) => c.society?.corruption_cpi ?? null, format: (v) => `${fmt.num(v, 0)} / 100`, better: 'higher' },
   { group: 'Confiance', label: 'Score de confiance', get: (c) => c.confidence.score, format: (v) => fmt.num(v), better: 'higher' },
   { group: 'Confiance', label: 'Sentiment actualité', get: (c) => c.sentiment.score, format: (v) => fmt.num(v, 0), better: 'higher' },
   { group: 'Projections', label: 'PIB +10 ans', get: (c) => c.projection.gdp_10 * 1e9, format: fmt.usd, better: 'none' },
@@ -137,6 +146,21 @@ export default function ComparisonModal({ a, b, onClose, onSwap }: ComparisonMod
                 </tr>
               </thead>
               <tbody>
+                <tr className="border-t border-terminal-line">
+                  <td className="py-2 text-xs text-terminal-sub">Pouvoir</td>
+                  {[a, b].map((c) => {
+                    const idx = politicalIndex(c);
+                    return (
+                      <td key={c.iso3} className="py-2 pr-2 text-[11px] leading-snug text-terminal-ink">
+                        <span className="flex items-center gap-1.5">
+                          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: idx === null ? COLORS.sub : POLITICAL_COLORS[idx].color }} />
+                          {c.politics?.political_category ?? 'n.d.'}
+                        </span>
+                        {c.politics?.leaders[0] && <span className="text-terminal-muted">{c.politics.leaders[0].name}</span>}
+                      </td>
+                    );
+                  })}
+                </tr>
                 <tr className="border-t border-terminal-line">
                   <td className="py-2 text-xs text-terminal-sub">Statut</td>
                   <td className="py-2 pr-2">

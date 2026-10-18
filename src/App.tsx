@@ -4,10 +4,12 @@ import {
   BarChart3,
   Globe2,
   Hourglass,
-  HeartPulse,
   Info,
+  Radar,
   RotateCcw,
-  TrendingUp,
+  SlidersHorizontal,
+  Users,
+  Vote,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -18,17 +20,18 @@ import SearchBar from './components/SearchBar';
 import MapLegend from './components/MapLegend';
 import WorldPanel from './components/WorldPanel';
 import Ticker from './components/Ticker';
-import type { CountryCollection, FilterKey, MacroData } from './types';
-import { FILTERS, normalizeData, PRIMARY_FILTERS } from './lib/metrics';
-import DependencyMenu from './components/DependencyMenu';
+import FilterMenu from './components/FilterMenu';
+import QuickFilters from './components/QuickFilters';
+import type { CountryCollection, FilterKey, MacroData, QuickFilters as QuickFiltersState } from './types';
+import { DEFAULT_QUICK_FILTERS, FILTER_GROUPS, FILTERS, isQuickFilterActive, matchesQuickFilters, normalizeData } from './lib/metrics';
 
 const BASE = import.meta.env.BASE_URL;
 
-const FILTER_ICONS: Partial<Record<FilterKey, LucideIcon>> = {
-  confidence: HeartPulse,
-  gdp: BarChart3,
-  traj10: TrendingUp,
-  traj25: Hourglass,
+const GROUP_ICONS: Record<string, LucideIcon> = {
+  economy: BarChart3,
+  dependencies: Radar,
+  demography: Users,
+  projections: Hourglass,
 };
 
 type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; data: MacroData; geo: CountryCollection };
@@ -78,6 +81,8 @@ export default function App() {
   const [compareMode, setCompareMode] = useState(false);
   const [compareIso, setCompareIso] = useState<string | null>(null);
   const [showAbout, setShowAbout] = useState(false);
+  const [quick, setQuick] = useState<QuickFiltersState>(DEFAULT_QUICK_FILTERS);
+  const [showQuick, setShowQuick] = useState(() => window.innerWidth >= 768);
   const globeRef = useRef<GlobeViewHandle>(null);
 
   useEffect(() => {
@@ -89,6 +94,13 @@ export default function App() {
   const countries = useMemo(() => (state.status === 'ready' ? state.data.countries : []), [state]);
   const byIso = useMemo(() => new Map(countries.map((c) => [c.iso3, c])), [countries]);
   const sortedByName = useMemo(() => [...countries].sort((a, b) => a.name_fr.localeCompare(b.name_fr, 'fr')), [countries]);
+
+  // Quick filters isolate a subset: others fade out on the globe and leave the legend / ranking.
+  const matched = useMemo(
+    () => (isQuickFilterActive(quick) ? new Set(countries.filter((c) => matchesQuickFilters(c, quick)).map((c) => c.iso3)) : null),
+    [countries, quick],
+  );
+  const legendCountries = useMemo(() => (matched ? countries.filter((c) => matched.has(c.iso3)) : countries), [countries, matched]);
 
   const selected = selectedIso ? byIso.get(selectedIso) ?? null : null;
   const compared = compareIso ? byIso.get(compareIso) ?? null : null;
@@ -167,7 +179,10 @@ export default function App() {
   const { meta } = state.data;
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div
+      className="relative h-full w-full overflow-hidden"
+      style={{ ['--chrome-top' as string]: showQuick ? '146px' : '88px' }}
+    >
       <GlobeView
         ref={globeRef}
         features={state.geo.features}
@@ -175,6 +190,7 @@ export default function App() {
         filter={filter}
         selectedIso={selectedIso}
         compareIso={compareIso}
+        matched={matched}
         onSelect={handleSelect}
       />
       <div className="vignette pointer-events-none absolute inset-0" />
@@ -199,51 +215,53 @@ export default function App() {
 
           <nav
             className="-mx-1 flex min-w-0 gap-1 overflow-x-auto rounded-lg px-1 pb-0.5 lg:flex-1 lg:justify-center lg:pb-0"
-            aria-label="Filtre de coloration du globe"
+            aria-label="Mode de coloration du globe"
           >
-            {PRIMARY_FILTERS.map((key, i) => {
-              const Icon = FILTER_ICONS[key] ?? HeartPulse;
-              const active = filter === key;
-              const button = (
-                <button
-                  key={key}
-                  onClick={() => setFilter(key)}
-                  aria-pressed={active}
-                  title={FILTERS[key].label}
-                  className={`flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition ${
-                    active
-                      ? 'bg-terminal-accent text-black shadow-[0_0_18px_-4px_rgba(245,166,35,0.8)]'
-                      : 'text-terminal-sub hover:bg-white/[0.06] hover:text-terminal-ink'
-                  }`}
-                >
-                  <Icon size={13} strokeWidth={2.25} />
-                  <span className="hidden min-[1800px]:inline">{FILTERS[key].label}</span>
-                  <span className="min-[1800px]:hidden">{FILTERS[key].short}</span>
-                </button>
-              );
-              // the dependency menu sits between "PIB" and the trajectories
-              return i === 1 ? (
-                <div key={key} className="flex gap-1">
-                  {button}
-                  <DependencyMenu filter={filter} onChange={setFilter} />
-                </div>
-              ) : (
-                button
-              );
-            })}
+            {FILTER_GROUPS.filter((g) => g.id !== 'projections').map((g) => (
+              <FilterMenu key={g.id} label={g.label} icon={GROUP_ICONS[g.id]} sections={g.sections} filter={filter} onChange={setFilter} />
+            ))}
+            <button
+              onClick={() => setFilter('politics')}
+              aria-pressed={filter === 'politics'}
+              title={FILTERS.politics.label}
+              className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                filter === 'politics'
+                  ? 'bg-terminal-accent text-black shadow-[0_0_18px_-4px_rgba(245,166,35,0.8)]'
+                  : 'text-terminal-sub hover:bg-white/[0.06] hover:text-terminal-ink'
+              }`}
+            >
+              <Vote size={13} strokeWidth={2.25} /> Politique
+            </button>
+            {FILTER_GROUPS.filter((g) => g.id === 'projections').map((g) => (
+              <FilterMenu key={g.id} label={g.label} icon={GROUP_ICONS[g.id]} sections={g.sections} filter={filter} onChange={setFilter} />
+            ))}
           </nav>
 
           <div className="flex items-center gap-2 lg:w-72">
             <SearchBar countries={sortedByName} onSelect={handleSelect} placeholder={compareMode ? 'Pays à comparer…' : undefined} />
+            <button
+              onClick={() => setShowQuick((v) => !v)}
+              className={`icon-btn ${showQuick || matched ? 'text-terminal-accent' : ''}`}
+              aria-label="Filtres rapides"
+              aria-pressed={showQuick}
+              title="Filtres rapides (isoler des pays)"
+            >
+              <SlidersHorizontal size={17} />
+            </button>
             <button onClick={() => setShowAbout((v) => !v)} className="icon-btn hidden lg:inline-flex" aria-label="Méthodologie">
               <Info size={17} />
             </button>
           </div>
         </div>
+        {showQuick && (
+          <div className="mt-2 flex justify-center">
+            <QuickFilters value={quick} matched={matched?.size ?? countries.length} total={countries.length} onChange={setQuick} />
+          </div>
+        )}
       </header>
 
       {compareMode && selected && (
-        <div className="absolute left-1/2 top-[132px] z-20 -translate-x-1/2 lg:top-24">
+        <div className="absolute left-1/2 top-[calc(var(--chrome-top)+44px)] z-20 -translate-x-1/2 lg:top-[calc(var(--chrome-top)+8px)]">
           <div className="glass-panel flex items-center gap-3 rounded-full px-4 py-2 text-xs text-terminal-ink">
             <span className="h-2 w-2 animate-pulse rounded-full bg-terminal-accent" />
             Comparer <b>{selected.name_fr}</b> avec… cliquez un pays
@@ -255,11 +273,11 @@ export default function App() {
       )}
 
       {/* Left column: world pulse (tall screens) + legend */}
-      <div className="tall-only pointer-events-none absolute left-4 top-[88px] z-10">
+      <div className="tall-only pointer-events-none absolute left-4 top-[var(--chrome-top)] z-10">
         <WorldPanel countries={countries} onSelect={handleSelect} />
       </div>
       <div className={`pointer-events-none absolute bottom-14 left-4 z-10 ${selected ? 'hidden md:block' : 'hidden sm:block'}`}>
-        <MapLegend filter={filter} countries={countries} onSelect={handleSelect} />
+        <MapLegend filter={filter} countries={legendCountries} onSelect={handleSelect} />
       </div>
 
       {!selected && (

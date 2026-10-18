@@ -16,6 +16,8 @@ interface GlobeViewProps {
   filter: FilterKey;
   selectedIso: string | null;
   compareIso: string | null;
+  /** quick-filter isolation: countries outside the set fade out (null = no isolation) */
+  matched: Set<string> | null;
   onSelect: (iso3: string) => void;
 }
 
@@ -40,7 +42,7 @@ function escapeHtml(s: string): string {
 function tooltipHtml(country: Country | undefined, featureName: string, filter: FilterKey): string {
   if (!country) {
     return `<div class="globe-tip"><div class="globe-tip-title">${escapeHtml(featureName)}</div>
-      <div class="globe-tip-muted">Hors des 40 économies couvertes</div></div>`;
+      <div class="globe-tip-muted">Aucune donnée publiée pour ce territoire</div></div>`;
   }
   const def = FILTERS[filter];
   const c = country.confidence;
@@ -51,6 +53,7 @@ function tooltipHtml(country: Country | undefined, featureName: string, filter: 
     </div>
     <div class="globe-tip-row"><span>PIB</span><b>${fmt.usd(country.indicators.gdp_usd)}</b></div>
     <div class="globe-tip-row"><span>Confiance</span><b>${fmt.num(c.score)} · ${c.label}</b></div>
+    ${country.politics && filter !== 'politics' ? `<div class="globe-tip-row"><span>Pouvoir</span><b>${escapeHtml(country.politics.leaders[0]?.name ?? country.politics.political_category ?? 'Non classé')}</b></div>` : ''}
     ${filter !== 'confidence' && filter !== 'gdp' ? `<div class="globe-tip-row"><span>${def.short}</span><b>${escapeHtml(def.format(country))}</b></div>` : ''}
     ${filter === 'gdp' ? `<div class="globe-tip-row"><span>Croissance</span><b>${fmt.pct(country.indicators.gdp_growth, true)}</b></div>` : ''}
     <div class="globe-tip-hint">Cliquer pour le détail</div>
@@ -58,7 +61,7 @@ function tooltipHtml(country: Country | undefined, featureName: string, filter: 
 }
 
 const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView(
-  { features, countries, filter, selectedIso, compareIso, onSelect },
+  { features, countries, filter, selectedIso, compareIso, matched, onSelect },
   ref,
 ) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
@@ -140,20 +143,22 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
       const f = obj as CountryFeature;
       const c = countries.get(f.properties.ISO_A3);
       if (!c) return withAlpha(COLORS.noData, 0.55);
+      if (matched && !matched.has(c.iso3)) return 'rgba(24, 28, 36, 0.28)';
       if (!def.available(c)) return withAlpha('#2a2f38', 0.75);
       const base = def.color(c);
       const highlighted = f.properties.ISO_A3 === hoverIso || f.properties.ISO_A3 === selectedIso || f.properties.ISO_A3 === compareIso;
       return withAlpha(base, highlighted ? 1 : 0.88);
     },
-    [countries, def, hoverIso, selectedIso, compareIso],
+    [countries, def, hoverIso, selectedIso, compareIso, matched],
   );
 
   const sideColor = useCallback(
     (obj: object) => {
       const c = countries.get((obj as CountryFeature).properties.ISO_A3);
+      if (c && matched && !matched.has(c.iso3)) return 'rgba(20, 24, 30, 0.1)';
       return c && def.available(c) ? withAlpha(def.color(c), 0.35) : 'rgba(20, 26, 34, 0.3)';
     },
-    [countries, def],
+    [countries, def, matched],
   );
 
   const strokeColor = useCallback(
@@ -161,9 +166,10 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
       const iso = (obj as CountryFeature).properties.ISO_A3;
       if (iso === selectedIso || iso === compareIso) return COLORS.accent;
       if (iso === hoverIso) return '#ffffff';
+      if (matched && !matched.has(iso)) return 'rgba(255, 255, 255, 0.05)';
       return countries.has(iso) ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.06)';
     },
-    [countries, hoverIso, selectedIso, compareIso],
+    [countries, hoverIso, selectedIso, compareIso, matched],
   );
 
   const altitude = useCallback(
@@ -171,12 +177,13 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
       const iso = (obj as CountryFeature).properties.ISO_A3;
       const c = countries.get(iso);
       let alt = c ? 0.012 : 0.004;
-      if (c && filter === 'gdp') alt += Math.min(8, Math.max(0, c.indicators.gdp_growth)) * 0.01;
+      if (c && matched && !matched.has(iso)) alt = 0.004;
+      else if (c && filter === 'gdp') alt += Math.min(8, Math.max(0, c.indicators.gdp_growth)) * 0.01;
       if (iso === selectedIso || iso === compareIso) alt += 0.05;
       else if (iso === hoverIso && c) alt += 0.035;
       return alt;
     },
-    [countries, filter, hoverIso, selectedIso, compareIso],
+    [countries, filter, hoverIso, selectedIso, compareIso, matched],
   );
 
   const label = useCallback(
@@ -240,6 +247,7 @@ const GlobeView = forwardRef<GlobeViewHandle, GlobeViewProps>(function GlobeView
         pointLng={(p: object) => (p as MarkerPoint).country.lng}
         pointColor={(p: object) => {
           const c = (p as MarkerPoint).country;
+          if (matched && !matched.has(c.iso3)) return 'rgba(60, 66, 76, 0.35)';
           return def.available(c) ? def.color(c) : '#3a404a';
         }}
         pointAltitude={(p: object) => {

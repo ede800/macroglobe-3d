@@ -1,4 +1,4 @@
-import type { Country, DependencyKey, ExposureAxisKey, FilterKey, MacroData } from '../types';
+import type { Country, DependencyKey, ExposureAxisKey, FilterKey, MacroData, PoliticalCategory, QuickFilters } from '../types';
 
 // ---------------------------------------------------------------------------
 // Color ramps (dark surface). Sequential: near-zero recedes toward the dark
@@ -114,7 +114,7 @@ export function confidenceColor(score: number): string {
 // ---------------------------------------------------------------------------
 
 export interface LegendSpec {
-  kind: 'sequential' | 'diverging';
+  kind: 'sequential' | 'diverging' | 'categorical';
   stops: string[];
   ticks: { at: number; label: string }[];
   caption: string;
@@ -136,6 +136,9 @@ export interface FilterDef {
   color: (c: Country) => string;
   legend: LegendSpec;
   higherIsBetter: boolean | null;
+  /** categorical filters (politics, fertility bands): legend swatches + category of each country */
+  categories?: { label: string; color: string }[];
+  categoryOf?: (c: Country) => number | null;
 }
 
 function trajectoryDelta(c: Country, horizon: 10 | 25): number {
@@ -160,6 +163,45 @@ const AQUA_RAMP = hueRamp('#1fb27e');
 const MAGENTA_RAMP = hueRamp('#d55181');
 
 const always = () => true;
+
+export const POLITICAL_COLORS: { label: PoliticalCategory; color: string }[] = [
+  { label: 'Extrême-Gauche / Communiste', color: '#e5252f' },
+  { label: 'Gauche / Social-démocrate', color: '#f47c6c' },
+  { label: 'Centre / Libéral', color: '#f2b318' },
+  { label: 'Droite / Conservateur', color: '#3b78f0' },
+  { label: 'Droite Nationaliste / Extrême-Droite', color: '#4a3fc4' },
+  { label: 'Monarchie Absolue / Théocratie / Autre', color: '#a35be8' },
+];
+
+export const POLITICAL_SHORT = ['Ext. gauche / Communiste', 'Gauche', 'Centre', 'Droite', 'Nationaliste / Ext. droite', 'Monarchie / Autre'];
+
+export function politicalIndex(c: Country): number | null {
+  const cat = c.politics?.political_category;
+  if (!cat) return null;
+  const idx = POLITICAL_COLORS.findIndex((p) => p.label === cat);
+  return idx < 0 ? null : idx;
+}
+
+export const FERTILITY_BANDS = [
+  { label: '< 1,5 · hiver démographique', color: '#e5484d' },
+  { label: '1,5 - 2,1 · sous le renouvellement', color: '#f5c518' },
+  { label: '2,1 - 2,5 · optimal', color: '#10b981' },
+  { label: '> 2,5 · boom démographique', color: '#3b82f6' },
+];
+
+export function fertilityBand(tfr: number | null): number | null {
+  if (tfr === null) return null;
+  if (tfr < 1.5) return 0;
+  if (tfr < 2.1) return 1;
+  if (tfr <= 2.5) return 2;
+  return 3;
+}
+
+export function fmtPopulation(v: number): string {
+  if (v >= 1e9) return `${fmt.num(v / 1e9, 2)} Md hab.`;
+  if (v >= 1e6) return `${fmt.num(v / 1e6, v >= 1e8 ? 0 : 1)} M hab.`;
+  return `${fmt.num(v / 1e3, 0)} k hab.`;
+}
 
 const depValue = (c: Country, k: DependencyKey) => c.dependencies?.indicators[k]?.value ?? null;
 const partnerShare = (c: Country, p: 'china' | 'us' | 'eu') => c.dependencies?.partners?.[p]?.share ?? null;
@@ -455,6 +497,190 @@ export const FILTERS: Record<FilterKey, FilterDef> = {
     caption: 'Dette extérieure, % du RNB',
     higherIsBetter: false,
   }),
+  ppp: metric({
+    key: 'ppp',
+    label: 'Pouvoir d’achat (PIB PPA / habitant)',
+    short: 'PIB PPA/hab',
+    description: 'PIB par habitant en parité de pouvoir d’achat (dollars internationaux courants) : le niveau de vie corrigé du coût de la vie.',
+    get: (c) => c.society?.gdp_ppp_per_capita ?? null,
+    show: (v) => `${fmt.num(v / 1000, 1)} k$ PPA`,
+    scale: (v) => (Math.log10(Math.max(v, 500)) - 3) / 2.1,
+    ramp: AQUA_RAMP,
+    ticks: [{ at: 0, label: '1 k$' }, { at: 0.476, label: '10 k$' }, { at: 0.81, label: '50 k$' }, { at: 1, label: '≥ 125 k$' }],
+    caption: 'PIB PPA par habitant (échelle log)',
+    higherIsBetter: true,
+  }),
+  growth: metric({
+    key: 'growth',
+    label: 'Croissance réelle du PIB',
+    short: 'Croissance',
+    description: 'Croissance réelle annuelle du PIB, dernière année publiée (Banque mondiale / FMI).',
+    get: (c) => c.indicators.gdp_growth,
+    show: (v) => fmt.pct(v, true),
+    scale: (v) => (v + 6) / 12,
+    ramp: DIVERGING,
+    ticks: [{ at: 0, label: '≤ −6 %' }, { at: 0.25, label: '−3' }, { at: 0.5, label: '0' }, { at: 0.75, label: '+3' }, { at: 1, label: '≥ +6 %' }],
+    caption: 'Récession ← 0 → Expansion',
+    higherIsBetter: true,
+  }),
+  debt: metric({
+    key: 'debt',
+    label: 'Dette publique / PIB',
+    short: 'Dette/PIB',
+    description: 'Dette brute des administrations publiques en % du PIB (FMI en priorité).',
+    get: (c) => c.indicators.debt_gdp,
+    show: (v) => `${fmt.num(v, 0)} % du PIB`,
+    brief: (v) => `${fmt.num(v, 0)} %`,
+    scale: (v) => v / 150,
+    ramp: RED_RAMP,
+    ticks: [{ at: 0, label: '0 %' }, { at: 0.4, label: '60 %' }, { at: 0.6, label: '90 %' }, { at: 1, label: '≥ 150 %' }],
+    caption: 'Dette publique, % du PIB',
+    higherIsBetter: false,
+  }),
+  population: metric({
+    key: 'population',
+    label: 'Population totale',
+    short: 'Population',
+    description: 'Nombre d’habitants (Banque mondiale, à défaut ONU).',
+    get: (c) => c.demography?.population ?? null,
+    show: (v) => fmtPopulation(v),
+    detail: (c) => `croissance ${fmt.pct(c.demography?.population_growth ?? c.indicators.pop_growth, true)}/an`,
+    scale: (v) => (Math.log10(Math.max(v, 1e4)) - 5) / 4.2,
+    ramp: VIOLET_RAMP,
+    ticks: [{ at: 0, label: '100 k' }, { at: 0.238, label: '1 M' }, { at: 0.476, label: '10 M' }, { at: 0.714, label: '100 M' }, { at: 1, label: '1,5 Md' }],
+    caption: 'Habitants (échelle log)',
+    higherIsBetter: null,
+  }),
+  fertility: {
+    ...metric({
+      key: 'fertility',
+      label: 'Enfants par femme (fécondité)',
+      short: 'Fécondité',
+      description: 'Indice synthétique de fécondité. Seuil de renouvellement des générations : 2,1 enfants par femme.',
+      get: (c) => c.demography?.fertility_rate ?? null,
+      show: (v) => `${fmt.num(v, 2)} enfant${v >= 2 ? 's' : ''}/femme`,
+      brief: (v) => fmt.num(v, 2),
+      detail: (c) => c.demography?.fertility_status ?? '',
+      scale: (v) => v / 6,
+      ramp: ['#e5484d', '#f5c518', '#10b981', '#3b82f6'],
+      ticks: [{ at: 0.25, label: '1,5' }, { at: 0.35, label: '2,1' }, { at: 0.417, label: '2,5' }, { at: 1, label: '6' }],
+      caption: 'Enfants par femme',
+      higherIsBetter: null,
+    }),
+    legend: {
+      kind: 'categorical',
+      stops: [],
+      ticks: [],
+      caption: 'Seuil de renouvellement : 2,1 enfants par femme',
+    },
+    categories: FERTILITY_BANDS,
+    categoryOf: (c) => fertilityBand(c.demography?.fertility_rate ?? null),
+    color: (c) => {
+      const band = fertilityBand(c.demography?.fertility_rate ?? null);
+      return band === null ? COLORS.noData : FERTILITY_BANDS[band].color;
+    },
+  },
+  median_age: metric({
+    key: 'median_age',
+    label: 'Âge médian',
+    short: 'Âge médian',
+    description: 'Âge qui partage la population en deux moitiés égales (ONU, World Population Prospects).',
+    get: (c) => c.demography?.median_age ?? null,
+    show: (v) => `${fmt.num(v, 1)} ans`,
+    scale: (v) => (v - 15) / 35,
+    ramp: MAGENTA_RAMP,
+    ticks: [{ at: 0, label: '≤ 15' }, { at: 0.286, label: '25' }, { at: 0.571, label: '35' }, { at: 0.857, label: '45' }, { at: 1, label: '50 ans' }],
+    caption: 'Âge médian (ans)',
+    higherIsBetter: null,
+  }),
+  life_expectancy: metric({
+    key: 'life_expectancy',
+    label: 'Espérance de vie',
+    short: 'Espérance de vie',
+    description: 'Espérance de vie à la naissance, en années.',
+    get: (c) => c.demography?.life_expectancy ?? null,
+    show: (v) => `${fmt.num(v, 1)} ans`,
+    scale: (v) => (v - 50) / 35,
+    ramp: AQUA_RAMP,
+    ticks: [{ at: 0, label: '≤ 50' }, { at: 0.286, label: '60' }, { at: 0.571, label: '70' }, { at: 0.857, label: '80' }, { at: 1, label: '85 ans' }],
+    caption: 'Espérance de vie à la naissance',
+    higherIsBetter: true,
+  }),
+  hdi: metric({
+    key: 'hdi',
+    label: 'Indice de développement humain (IDH)',
+    short: 'IDH',
+    description: 'IDH du PNUD (0 à 1) : santé, éducation et niveau de vie.',
+    get: (c) => c.society?.hdi ?? null,
+    show: (v) => fmt.num(v, 3),
+    scale: (v) => (v - 0.35) / 0.62,
+    ramp: BLUE_RAMP,
+    ticks: [{ at: 0, label: '≤ 0,35' }, { at: 0.403, label: '0,6' }, { at: 0.726, label: '0,8' }, { at: 1, label: '0,97' }],
+    caption: 'IDH (PNUD)',
+    higherIsBetter: true,
+  }),
+  gini: metric({
+    key: 'gini',
+    label: 'Inégalités de revenus (indice de Gini)',
+    short: 'Gini',
+    description: 'Indice de Gini (0 = égalité parfaite, 100 = inégalité maximale), dernière enquête disponible.',
+    get: (c) => c.society?.gini ?? null,
+    show: (v) => fmt.num(v, 1),
+    scale: (v) => (v - 24) / 36,
+    ramp: AMBER_RAMP,
+    ticks: [{ at: 0, label: '≤ 24' }, { at: 0.333, label: '36' }, { at: 0.667, label: '48' }, { at: 1, label: '≥ 60' }],
+    caption: 'Indice de Gini (plus = plus inégalitaire)',
+    higherIsBetter: false,
+  }),
+  corruption: metric({
+    key: 'corruption',
+    label: 'Perception de la corruption (IPC)',
+    short: 'Corruption',
+    description: 'Indice de perception de la corruption de Transparency International : 0 = très corrompu, 100 = très intègre.',
+    get: (c) => c.society?.corruption_cpi ?? null,
+    show: (v) => `${fmt.num(v, 0)} / 100`,
+    scale: (v) => (v - 10) / 80,
+    ramp: DIVERGING,
+    ticks: [{ at: 0, label: '≤ 10' }, { at: 0.25, label: '30' }, { at: 0.5, label: '50' }, { at: 0.75, label: '70' }, { at: 1, label: '≥ 90' }],
+    caption: 'Corrompu ← → Intègre',
+    higherIsBetter: true,
+  }),
+  unemployment: metric({
+    key: 'unemployment',
+    label: 'Taux de chômage',
+    short: 'Chômage',
+    description: 'Chômeurs en % de la population active (estimation modélisée de l’OIT).',
+    get: (c) => c.society?.unemployment ?? null,
+    show: (v) => fmt.pct(v),
+    scale: (v) => v / 25,
+    ramp: RED_RAMP,
+    ticks: [{ at: 0, label: '0 %' }, { at: 0.2, label: '5 %' }, { at: 0.4, label: '10 %' }, { at: 0.8, label: '20 %' }, { at: 1, label: '≥ 25 %' }],
+    caption: 'Taux de chômage',
+    higherIsBetter: false,
+  }),
+  politics: {
+    key: 'politics',
+    available: (c) => politicalIndex(c) !== null,
+    label: 'Couleur politique du pouvoir',
+    short: 'Politique',
+    description: 'Camp politique du parti au pouvoir (positionnement Wikidata du parti du dirigeant exécutif principal).',
+    value: (c) => c.politics?.political_position_score ?? Number.NEGATIVE_INFINITY,
+    format: (c) => {
+      const p = c.politics;
+      if (!p) return 'Donnée indisponible';
+      return [p.political_category ?? 'Non classé', p.ruling_party?.name].filter(Boolean).join(' · ');
+    },
+    compact: (c) => (c.politics?.political_position_score == null ? '—' : fmt.signed(c.politics.political_position_score, 0)),
+    position: (c) => clamp01(((c.politics?.political_position_score ?? 0) + 100) / 200),
+    color: (c) => {
+      const idx = politicalIndex(c);
+      return idx === null ? COLORS.noData : POLITICAL_COLORS[idx].color;
+    },
+    legend: { kind: 'categorical', stops: [], ticks: [], caption: 'Orientation du parti au pouvoir' },
+    categories: POLITICAL_COLORS,
+    categoryOf: politicalIndex,
+    higherIsBetter: null,
+  },
   reserves: metric({
     key: 'reserves',
     label: 'Coussin de réserves de change',
@@ -470,16 +696,70 @@ export const FILTERS: Record<FilterKey, FilterDef> = {
   }),
 };
 
-export const PRIMARY_FILTERS: FilterKey[] = ['confidence', 'gdp', 'traj10', 'traj25'];
-
-export const DEPENDENCY_FILTERS: { group: string; keys: FilterKey[] }[] = [
-  { group: 'Synthèse', keys: ['exposure'] },
-  { group: 'Partenaires commerciaux', keys: ['china', 'us_trade', 'eu_trade'] },
-  { group: 'Ressources & revenus', keys: ['tourism', 'energy', 'food', 'remittances', 'aid'] },
-  { group: 'Finance', keys: ['usd', 'external_debt', 'reserves'] },
+export const FILTER_GROUPS: { id: string; label: string; sections: { group: string; keys: FilterKey[] }[] }[] = [
+  {
+    id: 'economy',
+    label: 'Économie',
+    sections: [
+      { group: 'Santé économique', keys: ['confidence', 'gdp', 'ppp', 'growth', 'debt'] },
+      { group: 'Exposition', keys: ['tourism', 'usd'] },
+    ],
+  },
+  {
+    id: 'dependencies',
+    label: 'Dépendances',
+    sections: [
+      { group: 'Synthèse', keys: ['exposure'] },
+      { group: 'Partenaires commerciaux', keys: ['china', 'us_trade', 'eu_trade'] },
+      { group: 'Ressources & revenus', keys: ['energy', 'food', 'remittances', 'aid'] },
+      { group: 'Finance', keys: ['external_debt', 'reserves'] },
+    ],
+  },
+  {
+    id: 'demography',
+    label: 'Démographie',
+    sections: [
+      { group: 'Population', keys: ['population', 'fertility', 'median_age', 'life_expectancy'] },
+      { group: 'Société', keys: ['hdi', 'gini', 'corruption', 'unemployment'] },
+    ],
+  },
+  { id: 'projections', label: 'Projections', sections: [{ group: 'Scénario « Continuité actuelle »', keys: ['traj10', 'traj25'] }] },
 ];
 
-export const FILTER_ORDER: FilterKey[] = [...PRIMARY_FILTERS, ...DEPENDENCY_FILTERS.flatMap((g) => g.keys)];
+export const DEPENDENCY_FILTERS = FILTER_GROUPS.find((g) => g.id === 'dependencies')!.sections;
+
+export const FILTER_ORDER: FilterKey[] = [...FILTER_GROUPS.flatMap((g) => g.sections.flatMap((s) => s.keys)), 'politics'];
+
+export function groupOf(key: FilterKey): string | null {
+  return FILTER_GROUPS.find((g) => g.sections.some((s) => s.keys.includes(key)))?.id ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Quick isolation filters (pills under the top bar)
+// ---------------------------------------------------------------------------
+
+export const DEFAULT_QUICK_FILTERS: QuickFilters = { bloc: 'all', demography: 'all', mood: 'all' };
+
+export function matchesQuickFilters(c: Country, q: QuickFilters): boolean {
+  if (q.bloc !== 'all') {
+    const idx = politicalIndex(c);
+    if (idx === null) return false;
+    if (q.bloc === 'left' && idx > 1) return false;
+    if (q.bloc === 'center' && idx !== 2) return false;
+    if (q.bloc === 'right' && (idx < 3 || idx > 4)) return false;
+  }
+  if (q.demography !== 'all') {
+    const tfr = c.demography?.fertility_rate ?? null;
+    if (tfr === null) return false;
+    if (q.demography === 'decline' && tfr >= 2.1) return false;
+    if (q.demography === 'growth' && tfr <= 2.1) return false;
+  }
+  if (q.mood === 'optimist' && c.confidence.score <= 60) return false;
+  if (q.mood === 'pessimist' && c.confidence.score >= 40) return false;
+  return true;
+}
+
+export const isQuickFilterActive = (q: QuickFilters) => q.bloc !== 'all' || q.demography !== 'all' || q.mood !== 'all';
 
 // ---------------------------------------------------------------------------
 // Data normalisation (French names for the ~160 countries the pipeline only knows in English)
