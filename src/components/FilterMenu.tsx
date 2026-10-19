@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   Anchor,
   Baby,
+  BookOpen,
   Banknote,
   BarChart3,
   Briefcase,
@@ -70,10 +71,12 @@ interface FilterMenuProps {
   sections: { group: string; keys: FilterKey[] }[];
   filter: FilterKey;
   onChange: (key: FilterKey) => void;
+  /** opens the filter guide at the given filter */
+  onHelp?: (key: FilterKey) => void;
 }
 
 /** Dropdown grouping several globe colour modes. Rendered in a portal: the top bar scrolls horizontally. */
-export default function FilterMenu({ label, icon: GroupIcon, sections, filter, onChange }: FilterMenuProps) {
+export default function FilterMenu({ label, icon: GroupIcon, sections, filter, onChange, onHelp }: FilterMenuProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 12, width: 520 });
   const ref = useRef<HTMLDivElement>(null);
@@ -178,6 +181,17 @@ export default function FilterMenu({ label, icon: GroupIcon, sections, filter, o
                 </div>
               ))}
             </div>
+            {onHelp && (
+              <button
+                onClick={() => {
+                  onHelp(activeKey ?? keys[0]);
+                  setOpen(false);
+                }}
+                className="mt-1 flex w-full items-center gap-2 border-t border-terminal-line px-2 pb-1 pt-2.5 text-left text-[11px] font-medium text-terminal-accent hover:underline"
+              >
+                <BookOpen size={13} /> Comprendre ces filtres en détail
+              </button>
+            )}
           </div>,
           document.body,
         )}

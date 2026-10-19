@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import {
   AlertTriangle,
   BarChart3,
+  BookOpen,
   Globe2,
   Hourglass,
   Info,
@@ -18,6 +19,7 @@ import GlobeView, { type GlobeViewHandle } from './components/GlobeView';
 // Panels with charts (Recharts) are loaded on demand: the globe paints first.
 const CountrySidebar = lazy(() => import('./components/CountrySidebar'));
 const ComparisonModal = lazy(() => import('./components/ComparisonModal'));
+const FilterGuide = lazy(() => import('./components/FilterGuide'));
 import SearchBar from './components/SearchBar';
 import MapLegend from './components/MapLegend';
 import WorldPanel from './components/WorldPanel';
@@ -91,6 +93,8 @@ export default function App() {
   const [compareMode, setCompareMode] = useState(false);
   const [compareIso, setCompareIso] = useState<string | null>(null);
   const [showAbout, setShowAbout] = useState(false);
+  // Filter guide page: open = the filter to scroll to (or 'top'), null = closed. ?guide in the URL opens it.
+  const [guide, setGuide] = useState<FilterKey | 'top' | null>(() => (new URLSearchParams(window.location.search).has('guide') ? 'top' : null));
   const [quick, setQuick] = useState<QuickFiltersState>(DEFAULT_QUICK_FILTERS);
   const [showQuick, setShowQuick] = useState(() => window.innerWidth >= 768);
   const [showLegendMobile, setShowLegendMobile] = useState(false);
@@ -168,10 +172,12 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     if (filter === 'confidence') params.delete('filter');
     else params.set('filter', filter);
-    const query = params.toString();
+    if (guide) params.set('guide', '');
+    else params.delete('guide');
+    const query = params.toString().replace(/(^|&)guide=(?=&|$)/, '$1guide');
     const hash = selectedIso ? `#${selectedIso}${compareIso ? `,${compareIso}` : ''}` : '';
     window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}${hash}`);
-  }, [selectedIso, compareIso, filter, state.status]);
+  }, [selectedIso, compareIso, filter, guide, state.status]);
 
   const closeSidebar = useCallback(() => {
     setSelectedIso(null);
@@ -181,7 +187,7 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || compared) return;
+      if (e.key !== 'Escape' || compared || guide) return;
       // Escape inside the search box or an open dropdown only closes that element
       const target = e.target as HTMLElement | null;
       if (target?.closest('input, textarea, [role="menu"]') || document.querySelector('[role="menu"]')) return;
@@ -190,7 +196,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [compareMode, compared, selectedIso, closeSidebar]);
+  }, [compareMode, compared, guide, selectedIso, closeSidebar]);
 
   if (state.status === 'loading') return <LoadingScreen />;
 
@@ -252,7 +258,7 @@ export default function App() {
             aria-label="Mode de coloration du globe"
           >
             {FILTER_GROUPS.filter((g) => g.id !== 'projections').map((g) => (
-              <FilterMenu key={g.id} label={g.label} icon={GROUP_ICONS[g.id]} sections={g.sections} filter={filter} onChange={setFilter} />
+              <FilterMenu key={g.id} label={g.label} icon={GROUP_ICONS[g.id]} sections={g.sections} filter={filter} onChange={setFilter} onHelp={setGuide} />
             ))}
             <button
               onClick={() => setFilter('politics')}
@@ -267,7 +273,7 @@ export default function App() {
               <Vote size={13} strokeWidth={2.25} /> Politique
             </button>
             {FILTER_GROUPS.filter((g) => g.id === 'projections').map((g) => (
-              <FilterMenu key={g.id} label={g.label} icon={GROUP_ICONS[g.id]} sections={g.sections} filter={filter} onChange={setFilter} />
+              <FilterMenu key={g.id} label={g.label} icon={GROUP_ICONS[g.id]} sections={g.sections} filter={filter} onChange={setFilter} onHelp={setGuide} />
             ))}
           </nav>
 
@@ -281,6 +287,9 @@ export default function App() {
               title="Filtres rapides (isoler des pays)"
             >
               <SlidersHorizontal size={17} />
+            </button>
+            <button onClick={() => setGuide(filter)} className="icon-btn" aria-label="Guide des filtres" title="Guide des filtres">
+              <BookOpen size={17} />
             </button>
             <button onClick={() => setShowAbout((v) => !v)} className="icon-btn hidden lg:inline-flex" aria-label="Méthodologie">
               <Info size={17} />
@@ -383,6 +392,30 @@ export default function App() {
         </Suspense>
       )}
 
+      {guide && (
+        <Suspense fallback={null}>
+          <FilterGuide
+            countries={countries}
+            activeFilter={filter}
+            focus={guide === 'top' ? null : guide}
+            onShow={(key) => {
+              setFilter(key);
+              setGuide(null);
+            }}
+            onSelectCountry={(iso3) => {
+              // open the country sheet even when a comparison was pending
+              const country = byIso.get(iso3);
+              setGuide(null);
+              setCompareMode(false);
+              if (!country) return;
+              setSelectedIso(iso3);
+              globeRef.current?.flyTo(country);
+            }}
+            onClose={() => setGuide(null)}
+          />
+        </Suspense>
+      )}
+
       {showAbout && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in" onClick={() => setShowAbout(false)}>
           <div className="glass-panel max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl p-6 text-sm" onClick={(e) => e.stopPropagation()}>
@@ -405,6 +438,15 @@ export default function App() {
                 <li key={n}>{n}</li>
               ))}
             </ul>
+            <button
+              onClick={() => {
+                setShowAbout(false);
+                setGuide('top');
+              }}
+              className="mt-4 flex items-center gap-2 text-sm font-medium text-terminal-accent hover:underline"
+            >
+              <BookOpen size={15} /> Guide détaillé de chaque filtre
+            </button>
             <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider text-terminal-muted">Sources & statut du jour</h3>
             <ul className="space-y-1">
               {meta.sources.map((s) => (
